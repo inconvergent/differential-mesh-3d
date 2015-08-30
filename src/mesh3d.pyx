@@ -474,8 +474,13 @@ cdef class Mesh3d:
     cdef int c = self.HE[ca1].first
     cdef int d = self.HE[db1].first
 
-    cdef float ablen = sqrt(cpow(self.X[a]-self.X[b],2)+cpow(self.Y[a]-self.Y[b],2))
-    cdef float dclen = sqrt(cpow(self.X[d]-self.X[c],2)+cpow(self.Y[d]-self.Y[c],2))
+    cdef float ablen = sqrt(cpow(self.X[a]-self.X[b],2)+
+                            cpow(self.Y[a]-self.Y[b],2)+
+                            cpow(self.Z[a]-self.Z[b],2))
+
+    cdef float dclen = sqrt(cpow(self.X[d]-self.X[c],2)+
+                            cpow(self.Y[d]-self.Y[c],2)+
+                            cpow(self.Z[d]-self.Z[c],2))
 
     if self.__edge_duplicate_test(db1, c,d)!=1:
 

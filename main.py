@@ -3,25 +3,29 @@
 
 from __future__ import print_function
 
-#from numpy import pi
-from numpy import sqrt
-#from numpy import zeros
-#from numpy import cos
-#from numpy import sin
-#from numpy import power
-#from numpy import floor
-#from numpy.random import random
 
 NMAX = 10e7
 
 STP = 0.000001
 
-ITT = 100000
+ITT = 150000
 OPT_ITT = 1
 
 NEARL = 0.025
 H = 0.0273
 FARL = 0.1
+
+def random_unit_vec(num, scale):
+
+  from numpy.random import normal
+  from numpy.linalg import norm
+  from numpy import reshape
+
+  rnd = normal(size=(num,3))
+  d = norm(rnd,axis=1)
+  rnd[:] /= reshape(d, (num,1))
+
+  return rnd*scale
 
 def load(dm,fn):
 
@@ -70,8 +74,6 @@ def main():
   from time import time
   from modules.helpers import print_stats
 
-  from numpy.random import random
-
   fn_in = './res/base.json'
   fn_out = './res/res.json'
 
@@ -95,10 +97,10 @@ def main():
           print('surface ',v)
           raise KeyboardInterrupt
 
-      noise = (1.0-2*random(size=(vnum,3)))*STP*0.1
+      noise = random_unit_vec(vnum, STP*0.7)
       DM.position_noise(noise)
 
-      DM.optimize_edges(H, 10000)
+      DM.optimize_edges(H, STP)
 
       print_stats(i, time()-t1, DM)
 
