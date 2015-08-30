@@ -15,6 +15,7 @@ class Mesh(object):
         pass
 
     obj_name = 'thing'
+    self.obj_name = obj_name
 
     mesh = bpy.data.meshes.new('mesh')
     obj = bpy.data.objects.new(obj_name, mesh)
@@ -60,6 +61,23 @@ class Mesh(object):
 
     return
 
+  def rescale(self, scale):
+
+    obj_name = self.obj_name
+
+    bpy.ops.object.origin_set(type='GEOMETRY_ORIGIN')
+
+    o = bpy.data.objects[obj_name]
+
+    x,y,z = o.scale
+
+    x *= scale
+    y *= scale
+    z *= scale
+
+    o.scale = ((x,y,z))
+    #bpy.data.objects[obj_name].dimensions.z *= scale
+
   def build(self):
 
     bm = self.__get_bmesh()
@@ -87,7 +105,7 @@ def main():
 
   from time import time
 
-  fn_in = './res/dat.json'
+  fn_in = './res/res.json'
   fn_out = './res/res.blend'
 
   t1 = time()
@@ -95,6 +113,8 @@ def main():
   LM = Mesh(fn_in)
 
   LM.build()
+
+  LM.rescale(1000)
 
   LM.save(fn_out)
 

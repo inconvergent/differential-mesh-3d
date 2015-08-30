@@ -74,7 +74,7 @@ def main():
   from time import time
 
   fn_in = './res/sphere.blend'
-  fn_out = './res/sphere.json'
+  fn_out = './res/base.json'
 
   t1 = time()
 

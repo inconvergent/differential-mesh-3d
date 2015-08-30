@@ -18,6 +18,9 @@ from helpers cimport float_array_init
 from helpers cimport int_array_init
 from helpers cimport vcross
 
+import numpy as np
+cimport numpy as np
+
 
 cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
@@ -267,6 +270,21 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
         self.X[v] += self.DX[v]*step
         self.Y[v] += self.DY[v]*step
         self.Z[v] += self.DZ[v]*step
+
+    return 1
+
+  @cython.wraparound(False)
+  @cython.boundscheck(False)
+  @cython.nonecheck(False)
+  cpdef int position_noise(self, np.ndarray[double, mode="c",ndim=2] a):
+
+    cdef int v
+
+    for v in xrange(self.vnum):
+
+      self.X[v] += a[v,0]
+      self.Y[v] += a[v,1]
+      self.Z[v] += a[v,2]
 
     return 1
 

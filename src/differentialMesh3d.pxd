@@ -4,6 +4,8 @@
 from __future__ import division
 
 cimport mesh3d
+cimport numpy as np
+
 from libc.stdlib cimport malloc, free
 from zonemap3d cimport Zonemap3d
 
@@ -39,6 +41,8 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   cdef int __attract(self, float scale) nogil
 
   ## EXTERNAL
+
+  cpdef int position_noise(self, np.ndarray[double, mode="c",ndim=2] a)
 
   cpdef int optimize_position(self, float step, int itt=*)
 

@@ -13,20 +13,15 @@ from numpy import sqrt
 #from numpy.random import random
 
 NMAX = 10e7
-SIZE = 10000
-ONE = 1./SIZE
 
-RAD = 3*ONE
-H = sqrt(3.)*RAD
-NEARL = 2*RAD
-FARL = RAD*20
+STP = 0.000001
 
-OPT_STP = ONE
+ITT = 100000
 OPT_ITT = 1
 
-MID = 0.5
-
-LINEWIDTH = 1*ONE
+NEARL = 0.025
+H = 0.0273
+FARL = 0.1
 
 def load(dm,fn):
 
@@ -75,22 +70,41 @@ def main():
   from time import time
   from modules.helpers import print_stats
 
-  fn_in = './res/sphere.json'
-  fn_out = './res/dat.json'
+  from numpy.random import random
+
+  fn_in = './res/base.json'
+  fn_out = './res/res.json'
 
   DM = DifferentialMesh3d(NMAX, 2*FARL, NEARL, FARL)
 
   load(DM, fn_in)
 
-  for i in xrange(72):
+  for i in xrange(ITT):
 
-    t1 = time()
+    try:
 
-    DM.optimize_position(OPT_STP, OPT_ITT)
+      t1 = time()
 
-    DM.optimize_edges(H*1.8, NEARL*0.5)
+      DM.optimize_position(STP, OPT_ITT)
 
-    print_stats(i, time()-t1, DM)
+      vnum = DM.get_vnum()
+
+      for v in xrange(vnum):
+
+        if DM.is_surface_edge(v)>0:
+          print('surface ',v)
+          raise KeyboardInterrupt
+
+      noise = (1.0-2*random(size=(vnum,3)))*STP*0.1
+      DM.position_noise(noise)
+
+      DM.optimize_edges(H, 10000)
+
+      print_stats(i, time()-t1, DM)
+
+    except KeyboardInterrupt:
+
+      break
 
   export(DM, fn_out)
 
