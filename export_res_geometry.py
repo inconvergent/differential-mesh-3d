@@ -95,9 +95,15 @@ class Mesh(object):
 
     self.__to_mesh()
 
-  def save(self,fn):
+  def save_blend(self,fn):
 
     bpy.ops.wm.save_as_mainfile(filepath=fn)
+
+    return
+
+  def save_obj(self,fn):
+
+    bpy.ops.export_scene.obj(filepath=fn)
 
     return
 
@@ -106,7 +112,8 @@ def main():
   from time import time
 
   fn_in = './res/res.json'
-  fn_out = './res/res.blend'
+  fn_blend_out = './res/res.blend'
+  fn_obj_out = './res/res.obj'
 
   t1 = time()
 
@@ -116,7 +123,9 @@ def main():
 
   LM.rescale(1000)
 
-  LM.save(fn_out)
+  LM.save_blend(fn_blend_out)
+
+  LM.save_obj(fn_obj_out)
 
   print('\ntime:',time()-t1,'\n\n')
 
@@ -124,24 +133,6 @@ def main():
 
 
 if __name__ == '__main__':
-
-  #import argparse
-
-  #parser = argparse.ArgumentParser()
-  #parser.add_argument(
-    #'-i',
-    #'--input',
-    #help='input pickle file',
-    #default='./res/in.pkl'
-  #)
-
-  #parser.add_argument(
-    #'-o',
-    #'--output',
-    #help='output blender file',
-    #default='./res/res.blend'
-  #)
-  #args = parser.parse_args()
 
   main()
 

@@ -9,5 +9,5 @@ name="$1"
 
 mesh="$here/export_base_geometry.py"
 
-"$blender"  "$here/res/sphere.blend" -b -P "$mesh"  
+"$blender"  "$here/data/sphere.blend" -b -P "$mesh"  
 

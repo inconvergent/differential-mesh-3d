@@ -10,3 +10,6 @@ src/*.c
 src/*.html
 *.so
 profile/*
+*.blend
+*.blend1
+data/base.json

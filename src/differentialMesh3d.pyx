@@ -248,6 +248,66 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
+  @cython.cdivision(True)
+  cdef int __edge_vertex_force(self, int he1, int v1, float scale) nogil:
+
+    cdef int henum = self.henum
+    cdef float nearl = self.nearl
+
+    cdef int a = self.HE[he1].first
+    cdef int b = self.HE[he1].last
+
+    cdef float x = (self.X[b]+self.X[a])*0.5
+    cdef float y = (self.Y[b]+self.Y[a])*0.5
+    cdef float z = (self.Z[b]+self.Z[a])*0.5
+
+    cdef float dx = self.X[v1]-x
+    cdef float dy = self.Y[v1]-y
+    cdef float dz = self.Z[v1]-z
+
+    cdef float nrm = sqrt(dx*dx+dy*dy+dz*dz)
+
+    if nrm<=0:
+
+      return -1
+
+    if nrm>0.5*sqrt(3.0)*nearl:
+
+      #pass
+      self.DX[v1] += -dx/nrm*scale
+      self.DY[v1] += -dy/nrm*scale
+
+    else:
+
+      self.DX[v1] += dx/nrm*scale
+      self.DY[v1] += dy/nrm*scale
+
+    return 1
+
+  @cython.wraparound(False)
+  @cython.boundscheck(False)
+  @cython.nonecheck(False)
+  cdef int __triangle_force(self, float scale) nogil:
+
+    cdef int ab
+    cdef int bc
+    cdef int ca
+
+    for f in xrange(self.fnum):
+
+      ab = self.FHE[f]
+      bc = self.HE[ab].next
+      ca = self.HE[bc].next
+
+      self.__edge_vertex_force(ab,self.HE[ca].first,scale)
+      self.__edge_vertex_force(bc,self.HE[ab].first,scale)
+      self.__edge_vertex_force(ca,self.HE[ab].last,scale)
+
+    return 1
+
+  @cython.wraparound(False)
+  @cython.boundscheck(False)
+  @cython.nonecheck(False)
   cpdef int optimize_position(self, float step, int itt=1):
 
     cdef int v
@@ -264,6 +324,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
       self.__reject(reject_scale)
       self.__attract(scale)
+      self.__triangle_force(scale)
 
       for v in range(self.vnum):
 

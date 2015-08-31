@@ -74,7 +74,7 @@ def main():
   from time import time
   from modules.helpers import print_stats
 
-  fn_in = './res/base.json'
+  fn_in = './data/base.json'
   fn_out = './res/res.json'
 
   DM = DifferentialMesh3d(NMAX, 2*FARL, NEARL, FARL)
