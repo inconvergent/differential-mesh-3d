@@ -103,7 +103,7 @@ class Mesh(object):
 
   def save_obj(self,fn):
 
-    bpy.ops.export_scene.obj(filepath=fn)
+    bpy.ops.export_scene.obj(filepath=fn, use_smooth_groups=False, use_triangles=True, use_edges=True, use_normals=False)
 
     return
 
@@ -121,7 +121,7 @@ def main():
 
   LM.build()
 
-  LM.rescale(1000)
+  LM.rescale(100)
 
   LM.save_blend(fn_blend_out)
 

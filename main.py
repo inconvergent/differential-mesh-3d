@@ -6,14 +6,14 @@ from __future__ import print_function
 
 NMAX = 10e7
 
-STP = 0.000001
+STP = 0.00001
 
 ITT = 150000
 OPT_ITT = 1
 
-NEARL = 0.025
-H = 0.0273
-FARL = 0.1
+NEARL = 0.005
+H = 0.0055
+FARL = 0.07
 
 def random_unit_vec(num, scale):
 
