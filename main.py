@@ -5,15 +5,14 @@ from __future__ import print_function
 
 
 NMAX = 10e7
-
-STP = 0.00001
-
 ITT = 150000
 OPT_ITT = 1
 
-NEARL = 0.005
-H = 0.0055
-FARL = 0.07
+STP = 1.0e-5
+NEARL = 0.0068
+H = NEARL*1.5
+FARL = 0.03
+
 
 def random_unit_vec(num, scale):
 
@@ -91,13 +90,7 @@ def main():
 
       vnum = DM.get_vnum()
 
-      for v in xrange(vnum):
-
-        if DM.is_surface_edge(v)>0:
-          print('surface ',v)
-          raise KeyboardInterrupt
-
-      noise = random_unit_vec(vnum, STP*0.7)
+      noise = random_unit_vec(vnum, 4.3*STP)
       DM.position_noise(noise)
 
       DM.optimize_edges(H, STP)

@@ -867,10 +867,12 @@ cdef class Mesh3d:
 
     for k1,vv in facemap.iteritems():
 
-      he1 = <int>vv[0]
-      he2 = <int>vv[1]
+      if len(vv)>1:
 
-      self.__set_mutual_twins(he1,he2)
+        he1 = <int>vv[0]
+        he2 = <int>vv[1]
+
+        self.__set_mutual_twins(he1,he2)
 
     return 1
 

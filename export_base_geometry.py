@@ -29,15 +29,13 @@ class Mesh(object):
 
     return
 
-  def build(self, fn):
+  def export(self, fn):
 
     from json import dump
     from codecs import open
 
 
     world = bpy.context.active_object.matrix_world
-
-
     bm = self.__get_bmesh()
 
     vertices = []
@@ -80,7 +78,7 @@ def main():
 
   LM = Mesh(fn_in)
 
-  LM.build(fn_out)
+  LM.export(fn_out)
 
   print('\ntime:',time()-t1,'\n\n')
 
