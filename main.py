@@ -11,7 +11,10 @@ OPT_ITT = 1
 STP = 1.0e-5
 NEARL = 0.0068
 H = NEARL*1.5
+
 FARL = 0.03
+
+EXPORT_ITT = 10
 
 
 def random_unit_vec(num, scale):
