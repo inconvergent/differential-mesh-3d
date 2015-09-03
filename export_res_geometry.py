@@ -103,31 +103,42 @@ class Mesh(object):
 
   def save_obj(self,fn):
 
-    bpy.ops.export_scene.obj(filepath=fn, use_smooth_groups=False, use_triangles=True, use_edges=True, use_normals=False)
+    bpy.ops.export_scene.obj(
+      filepath=fn,
+      use_smooth_groups=False,
+      use_triangles=True,
+      use_edges=True,
+      use_normals=False,
+      use_materials=False
+    )
 
     return
 
 def main():
 
   from time import time
+  import glob, os
 
-  fn_in = './res/res.json'
-  fn_blend_out = './res/res.blend'
-  fn_obj_out = './res/res.obj'
+  dirname = './res/'
 
-  t1 = time()
+  os.chdir(dirname)
+  for fn in sorted(glob.glob('res_*.json')):
 
-  LM = Mesh(fn_in)
+    print('exporting: ' + fn)
 
-  LM.build()
+    t1 = time()
 
-  LM.rescale(100)
+    LM = Mesh(fn)
 
-  LM.save_blend(fn_blend_out)
+    LM.build()
 
-  LM.save_obj(fn_obj_out)
+    LM.rescale(100)
 
-  print('\ntime:',time()-t1,'\n\n')
+    fn_out = fn[:-4] + 'obj'
+
+    LM.save_obj(fn_out)
+
+    print('\ntime:',time()-t1,'\n\n')
 
   return
 

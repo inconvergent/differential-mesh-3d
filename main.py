@@ -77,7 +77,7 @@ def main():
   from modules.helpers import print_stats
 
   fn_in = './data/base.json'
-  fn_out = './res/res.json'
+  fn_out = './res/res'
 
   DM = DifferentialMesh3d(NMAX, 2*FARL, NEARL, FARL)
 
@@ -100,11 +100,18 @@ def main():
 
       print_stats(i, time()-t1, DM)
 
+      if i%EXPORT_ITT==0:
+
+        ## TODO: write obj directly. it's not that hard.
+        fn = '{:s}_{:06d}.json'.format(fn_out, i)
+        export(DM, fn)
+        print('wrote: ' + fn)
+
     except KeyboardInterrupt:
 
       break
 
-  export(DM, fn_out)
+  export(DM, fn_out+'_final.json')
 
 
 if __name__ == '__main__' :
