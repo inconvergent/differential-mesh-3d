@@ -14,7 +14,7 @@ H = NEARL*1.5
 
 FARL = 0.03
 
-EXPORT_ITT = 10
+EXPORT_ITT = 1000
 
 
 def random_unit_vec(num, scale):

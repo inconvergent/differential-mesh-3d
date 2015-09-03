@@ -78,6 +78,13 @@ class Mesh(object):
     o.scale = ((x,y,z))
     #bpy.data.objects[obj_name].dimensions.z *= scale
 
+
+  def delete_from_scene(self):
+
+      bpy.data.objects[self.obj_name].select = True
+      bpy.ops.object.delete()
+
+
   def build(self):
 
     bm = self.__get_bmesh()
@@ -129,14 +136,14 @@ def main():
     t1 = time()
 
     LM = Mesh(fn)
-
     LM.build()
-
     LM.rescale(100)
 
     fn_out = fn[:-4] + 'obj'
 
     LM.save_obj(fn_out)
+
+    LM.delete_from_scene()
 
     print('\ntime:',time()-t1,'\n\n')
 
