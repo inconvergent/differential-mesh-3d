@@ -24,6 +24,17 @@ class Obj(object):
 
     return obj
 
+  def smooth(self, levels):
+
+    bpy.context.scene.objects.active = self.obj
+    #bpy.context.scene.objects.selected = self.obj
+
+    bpy.ops.object.modifier_add(type='SUBSURF')
+    self.obj.modifiers['Subsurf'].levels = levels
+    self.obj.modifiers['Subsurf'].render_levels = levels
+
+    bpy.ops.object.shade_smooth()
+
   def __set_vis(self, frame, vis=True):
 
     bpy.context.scene.objects.active = self.obj
@@ -69,6 +80,7 @@ def main():
     t1 = time()
 
     O = Obj(fn,'a')
+    O.smooth(1)
     O.animate_vis(count, count+1)
     objs.append(O)
 

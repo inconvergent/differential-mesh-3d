@@ -14,7 +14,7 @@ H = NEARL*1.5
 
 FARL = 0.03
 
-EXPORT_ITT = 1000
+EXPORT_ITT = 100
 
 
 def random_unit_vec(num, scale):
@@ -43,7 +43,7 @@ def load(dm,fn):
 
   dm.initiate_faces(vertices, faces)
 
-def export(dm,fn):
+def export_json(dm,fn):
 
   from numpy import zeros
   from json import dump
@@ -66,6 +66,36 @@ def export(dm,fn):
   with open(fn, 'wb', encoding='utf8') as f:
 
     dump(data, f)
+
+    print('done.')
+
+def export_obj(dm,obj_name,fn):
+
+  from numpy import zeros
+  from codecs import open
+
+  np_verts = zeros((NMAX,3),'float')
+  np_tris = zeros((NMAX,3),'int')
+
+  vnum = dm.np_get_vertices(np_verts)
+  tnum = dm.np_get_triangles_vertices(np_tris)
+
+
+  print('storing mesh ...')
+  print('num vertices: {:d}, num triangles: {:d}'.format(vnum, tnum))
+
+  with open(fn, 'wb', encoding='utf8') as f:
+
+    f.write('o {:s}\n'.format(obj_name))
+
+    for v in np_verts[:vnum,:]:
+      f.write('v {:f} {:f} {:f}\n'.format(*v))
+
+    f.write('s off\n')
+
+    for t in np_tris[:tnum,:]:
+      t += 1
+      f.write('f {:d} {:d} {:d}\n'.format(*t))
 
     print('done.')
 
@@ -102,16 +132,18 @@ def main():
 
       if i%EXPORT_ITT==0:
 
-        ## TODO: write obj directly. it's not that hard.
+        #fn = '{:s}_{:06d}.obj'.format(fn_out, i)
+        #export_obj(DM, 'thing_mesh', fn)
+
         fn = '{:s}_{:06d}.json'.format(fn_out, i)
-        export(DM, fn)
+        export_json(DM, fn)
         print('wrote: ' + fn)
 
     except KeyboardInterrupt:
 
       break
 
-  export(DM, fn_out+'_final.json')
+  #export(DM, fn_out+'_final.json')
 
 
 if __name__ == '__main__' :
