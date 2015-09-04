@@ -60,6 +60,11 @@ class Obj(object):
     self.__set_vis(ain, True)
     self.__set_vis(aout, False)
 
+  def apply_mat(self):
+
+    mat = bpy.data.materials["Material"]
+    self.obj.data.materials.append(mat)
+
 
 def main():
 
@@ -82,6 +87,7 @@ def main():
     O = Obj(fn,'a')
     O.smooth(1)
     O.animate_vis(count, count+1)
+    O.apply_mat()
     objs.append(O)
 
     count += 1
