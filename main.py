@@ -4,17 +4,20 @@
 from __future__ import print_function
 
 
-NMAX = 10e7
-ITT = 150000
+NMAX = int(10e7)
+ITT = int(10e7)
 OPT_ITT = 1
 
 STP = 1.0e-5
 NEARL = 0.0068
-H = NEARL*1.5
+H = NEARL*0.8
 
 FARL = 0.03
 
 EXPORT_ITT = 100
+STAT_ITT = 50
+
+NUM_SOURCES = 10000
 
 
 def random_unit_vec(num, scale):
@@ -64,12 +67,13 @@ def load_obj(fn):
   dy = ymax - ymin
   dz = zmax - zmin
 
-  print('original x min max, {:0.8f} {:0.8f}, dst: {:0.8f}'.format(xmin,xmax,dx))
-  print('original y min max, {:0.8f} {:0.8f}, dst: {:0.8f}'.format(ymin,ymax,dy))
-  print('original z min max, {:0.8f} {:0.8f}, dst: {:0.8f}'.format(zmin,zmax,dz))
+  print('original')
+  print('x min max, {:0.8f} {:0.8f}, dst: {:0.8f}'.format(xmin,xmax,dx))
+  print('y min max, {:0.8f} {:0.8f}, dst: {:0.8f}'.format(ymin,ymax,dy))
+  print('z min max, {:0.8f} {:0.8f}, dst: {:0.8f}'.format(zmin,zmax,dz))
 
   np_vertices /= max([dx,dy,dz])
-  np_vertices *= 0.01
+  np_vertices *= 0.02
   np_vertices += 0.5
 
   xmax = np_vertices[:,0].max()
@@ -82,9 +86,10 @@ def load_obj(fn):
   dy = ymax - ymin
   dz = zmax - zmin
 
-  print('rescaled x min max, {:0.8f} {:0.8f}, dst: {:0.8f}'.format(xmin,xmax,dx))
-  print('rescaled y min max, {:0.8f} {:0.8f}, dst: {:0.8f}'.format(ymin,ymax,dy))
-  print('rescaled z min max, {:0.8f} {:0.8f}, dst: {:0.8f}'.format(zmin,zmax,dz))
+  print('rescaled')
+  print('x min max, {:0.8f} {:0.8f}, dst: {:0.8f}'.format(xmin,xmax,dx))
+  print('y min max, {:0.8f} {:0.8f}, dst: {:0.8f}'.format(ymin,ymax,dy))
+  print('z min max, {:0.8f} {:0.8f}, dst: {:0.8f}'.format(zmin,zmax,dz))
 
   return {
     'faces': faces,
@@ -126,14 +131,24 @@ def main():
   from differentialMesh3d import DifferentialMesh3d
   from time import time
   from modules.helpers import print_stats
+  from numpy.random import random
 
   fn_obj = './data/base.obj'
   fn_out = './res/res'
 
-  DM = DifferentialMesh3d(NMAX, 2*FARL, NEARL, FARL)
+  DM = DifferentialMesh3d(NMAX, FARL, NEARL, FARL)
 
   data = load_obj(fn_obj)
   DM.initiate_faces(data['vertices'], data['faces'])
+  DM.optimize_edges(H, STP)
+
+  #for e in xrange(DM.get_henum()):
+    #DM.set_edge_intensity(e, 0.4)
+
+  DM.set_edge_intensity(0,1)
+
+  sources = [(x,y,z) for x,y,z in random(size=(NUM_SOURCES, 3))]
+  DM.initialize_sources(sources, NEARL*5)
 
   for i in xrange(ITT):
 
@@ -141,7 +156,16 @@ def main():
 
       t1 = time()
 
+      killed = DM.find_nearby_sources()
+      if killed>0:
+
+        print(killed)
+
+      #for e in xrange(DM.get_henum()):
+        #print(DM.get_edge_intensity(e))
+
       DM.optimize_position(STP, OPT_ITT)
+      DM.diminish_all_vertex_intensity(0.9998)
 
       vnum = DM.get_vnum()
 
@@ -150,10 +174,10 @@ def main():
 
       DM.optimize_edges(H, STP)
 
-      print_stats(i, time()-t1, DM)
+      if i%STAT_ITT==0:
+        print_stats(i, time()-t1, DM)
 
       if i%EXPORT_ITT==0:
-
         fn = '{:s}_{:06d}.obj'.format(fn_out, i)
         export_obj(DM, 'thing_mesh', fn)
 

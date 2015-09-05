@@ -4,7 +4,7 @@ set -e
 
 here=$(pwd)
 
-rm -f ./res/res*.json
+rm -f ./res/res*.obj
 
 ./main.py
 

@@ -32,7 +32,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
   cdef float *SZ
 
-  #cdef Zonemap3d source_zonemap
+  cdef Zonemap3d source_zonemap
 
   ## FUNCTIONS
 
@@ -44,7 +44,13 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
   cdef int __attract(self, float scale) nogil
 
+  cdef int __find_nearby_sources(self) nogil
+
   ## EXTERNAL
+
+  cpdef int initialize_sources(self, list sources, float source_rad)
+
+  cpdef int find_nearby_sources(self)
 
   cpdef int position_noise(self, np.ndarray[double, mode="c",ndim=2] a)
 

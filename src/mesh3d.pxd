@@ -70,10 +70,6 @@ cdef class Mesh3d:
 
   cdef void __set_mutual_twins(self, int he1, int he2) nogil
 
-  #cdef int __get_surface_edge_outward_normal(self, int he1, float *nn) nogil
-
-  #cdef int __get_surface_edge_outward_vector(self, int he1, float *nn) nogil
-
   cdef int __is_surface_edge(self, int t1) nogil
 
   cdef int __next_surface(self, int he1, int direction) nogil

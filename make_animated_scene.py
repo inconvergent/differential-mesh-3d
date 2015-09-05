@@ -112,7 +112,8 @@ def main():
 
     print('\ntime:',time()-t1,'\n\n')
 
-  print('asdf')
+  bpy.data.scenes['Scene'].frame_current = 1
+  bpy.data.scenes['Scene'].frame_end = count-1
 
   os.chdir('..')
   bpy.ops.wm.save_as_mainfile(filepath='./final.blend')

@@ -1116,40 +1116,6 @@ cdef class Mesh3d:
 
     return [e1,e2,e3]
 
-  #@cython.wraparound(False)
-  #@cython.boundscheck(False)
-  #@cython.nonecheck(False)
-  #@cython.cdivision(True)
-  #cdef int __get_surface_edge_outward_vector(self, int he1, float *nn) nogil:
-    #"""
-    #consider triangle consisting of edge he1 and the additional vertex v1.
-
-    #returns normalized vector from v1 to the middle of he1.
-    #"""
-
-    #if self.__is_surface_edge(he1)<0:
-
-      #return -1
-
-    #cdef sHE he = self.HE[he1]
-
-    #cdef int first = he.first
-    #cdef int last = he.last
-
-    #cdef int v1 = self.HE[he.next].last
-
-    #cdef float dx = (self.X[last] + self.X[first])*0.5 - self.X[v1]
-    #cdef float dy = (self.Y[last] + self.Y[first])*0.5 - self.Y[v1]
-    #cdef float dz = (self.Z[last] + self.Z[first])*0.5 - self.Z[v1]
-
-    #cdef float length = sqrt(dx*dx+dy*dy+dz*dz)
-
-    #nn[0] = dx/length
-    #nn[1] = dy/length
-    #nn[2] = dz/length
-
-    #return 1
-
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
