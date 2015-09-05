@@ -29,45 +29,67 @@ def random_unit_vec(num, scale):
 
   return rnd*scale
 
-def load(dm,fn):
+def load_obj(fn):
 
-  from json import load
   from codecs import open
+  from numpy import row_stack
 
-  with open(fn, 'rb', encoding='utf8') as f:
+  vertices = []
+  faces = []
 
-    data = load(f)
+  with open(fn, 'r', encoding='utf8') as f:
 
-  vertices = data['vertices']
-  faces = data['triangles']
+    for l in f:
+      if l.startswith('#'):
+        continue
 
-  dm.initiate_faces(vertices, faces)
+      values = l.split()
+      if not values:
+        continue
+      if values[0] == 'v':
+        vertices.append([float(v) for v in values[1:]])
 
-def export_json(dm,fn):
+      if values[0] == 'f':
+        faces.append([int(v)-1 for v in values[1:]])
 
-  from numpy import zeros
-  from json import dump
-  from codecs import open
+  np_vertices = row_stack(vertices)
 
-  np_verts = zeros((NMAX,3),'float')
-  np_tris = zeros((NMAX,3),'int')
+  xmax = np_vertices[:,0].max()
+  xmin = np_vertices[:,0].min()
+  ymax = np_vertices[:,1].max()
+  ymin = np_vertices[:,1].min()
+  zmax = np_vertices[:,2].max()
+  zmin = np_vertices[:,2].min()
+  dx = xmax - xmin
+  dy = ymax - ymin
+  dz = zmax - zmin
 
-  vnum = dm.np_get_vertices(np_verts)
-  tnum = dm.np_get_triangles_vertices(np_tris)
+  print('original x min max, {:0.8f} {:0.8f}, dst: {:0.8f}'.format(xmin,xmax,dx))
+  print('original y min max, {:0.8f} {:0.8f}, dst: {:0.8f}'.format(ymin,ymax,dy))
+  print('original z min max, {:0.8f} {:0.8f}, dst: {:0.8f}'.format(zmin,zmax,dz))
 
-  data = {
-    'vertices': list([list(row) for row in np_verts[:vnum,:]]),
-    'triangles': list([list(row) for row in np_tris[:tnum,:]])
+  np_vertices /= max([dx,dy,dz])
+  np_vertices *= 0.01
+  np_vertices += 0.5
+
+  xmax = np_vertices[:,0].max()
+  xmin = np_vertices[:,0].min()
+  ymax = np_vertices[:,1].max()
+  ymin = np_vertices[:,1].min()
+  zmax = np_vertices[:,2].max()
+  zmin = np_vertices[:,2].min()
+  dx = xmax - xmin
+  dy = ymax - ymin
+  dz = zmax - zmin
+
+  print('rescaled x min max, {:0.8f} {:0.8f}, dst: {:0.8f}'.format(xmin,xmax,dx))
+  print('rescaled y min max, {:0.8f} {:0.8f}, dst: {:0.8f}'.format(ymin,ymax,dy))
+  print('rescaled z min max, {:0.8f} {:0.8f}, dst: {:0.8f}'.format(zmin,zmax,dz))
+
+  return {
+    'faces': faces,
+    'vertices': [list(row) for row in np_vertices]
   }
-
-  print('storing mesh ...')
-  print('num vertices: {:d}, num triangles: {:d}'.format(vnum, tnum))
-
-  with open(fn, 'wb', encoding='utf8') as f:
-
-    dump(data, f)
-
-    print('done.')
 
 def export_obj(dm,obj_name,fn):
 
@@ -79,7 +101,6 @@ def export_obj(dm,obj_name,fn):
 
   vnum = dm.np_get_vertices(np_verts)
   tnum = dm.np_get_triangles_vertices(np_tris)
-
 
   print('storing mesh ...')
   print('num vertices: {:d}, num triangles: {:d}'.format(vnum, tnum))
@@ -106,12 +127,13 @@ def main():
   from time import time
   from modules.helpers import print_stats
 
-  fn_in = './data/base.json'
+  fn_obj = './data/base.obj'
   fn_out = './res/res'
 
   DM = DifferentialMesh3d(NMAX, 2*FARL, NEARL, FARL)
 
-  load(DM, fn_in)
+  data = load_obj(fn_obj)
+  DM.initiate_faces(data['vertices'], data['faces'])
 
   for i in xrange(ITT):
 
@@ -135,15 +157,9 @@ def main():
         fn = '{:s}_{:06d}.obj'.format(fn_out, i)
         export_obj(DM, 'thing_mesh', fn)
 
-        #fn = '{:s}_{:06d}.json'.format(fn_out, i)
-        #export_json(DM, fn)
-        #print('wrote: ' + fn)
-
     except KeyboardInterrupt:
 
       break
-
-  #export(DM, fn_out+'_final.json')
 
 
 if __name__ == '__main__' :
