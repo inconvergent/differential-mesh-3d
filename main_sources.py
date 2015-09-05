@@ -142,12 +142,10 @@ def main():
   DM.initiate_faces(data['vertices'], data['faces'])
   DM.optimize_edges(H, STP)
 
-  #for e in xrange(DM.get_henum()):
-    #DM.set_edge_intensity(e, 0.4)
-
   DM.set_edge_intensity(0,1)
 
-  sources = [(x,y,z) for x,y,z in random(size=(NUM_SOURCES, 3))]
+  rnd = 0.1 + 0.8*random(size=(NUM_SOURCES, 3))
+  sources = [(x,y,z) for x,y,z in rnd]
   DM.initialize_sources(sources, NEARL*5)
 
   for i in xrange(ITT):
@@ -156,12 +154,7 @@ def main():
 
       t1 = time()
 
-      killed = DM.find_nearby_sources()
-      if killed>0:
-
-        print(killed)
-
-      DM.optimize_position(STP, OPT_ITT, scale_intensity=1)
+      DM.optimize_position(STP, OPT_ITT, scale_intensity=-1)
       DM.diminish_all_vertex_intensity(0.9998)
 
       vnum = DM.get_vnum()

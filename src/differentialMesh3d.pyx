@@ -365,10 +365,10 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
       self.__attract(scale)
       #self.__triangle_force(scale)
 
-      if scale_intensity>0:
-        intensity = self.I[v]
-
       for v in range(self.vnum):
+
+        if scale_intensity>0:
+          intensity = self.I[v]
 
         self.X[v] += self.DX[v]*step*intensity
         self.Y[v] += self.DY[v]*step*intensity
@@ -387,7 +387,6 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     for v in xrange(self.vnum):
 
       if scale_intensity>0:
-
         intensity = self.I[v]
 
       self.X[v] += a[v,0]*intensity
