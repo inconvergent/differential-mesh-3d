@@ -132,12 +132,12 @@ def main():
 
       if i%EXPORT_ITT==0:
 
-        #fn = '{:s}_{:06d}.obj'.format(fn_out, i)
-        #export_obj(DM, 'thing_mesh', fn)
+        fn = '{:s}_{:06d}.obj'.format(fn_out, i)
+        export_obj(DM, 'thing_mesh', fn)
 
-        fn = '{:s}_{:06d}.json'.format(fn_out, i)
-        export_json(DM, fn)
-        print('wrote: ' + fn)
+        #fn = '{:s}_{:06d}.json'.format(fn_out, i)
+        #export_json(DM, fn)
+        #print('wrote: ' + fn)
 
     except KeyboardInterrupt:
 

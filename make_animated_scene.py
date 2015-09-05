@@ -24,6 +24,23 @@ class Obj(object):
 
     return obj
 
+  def move_rescale(self, pos, scale):
+
+    #obj_name = self.obj_name
+    bpy.ops.object.origin_set(type='GEOMETRY_ORIGIN')
+
+    #o = bpy.data.objects[obj_name]
+    obj = self.obj
+
+    sx,sy,sz = obj.scale
+
+    sx *= scale
+    sy *= scale
+    sz *= scale
+
+    obj.scale = ((sx,sy,sz))
+    #bpy.data.objects[obj_name].dimensions.z *= scale
+
   def smooth(self, levels):
 
     bpy.context.scene.objects.active = self.obj
@@ -86,6 +103,7 @@ def main():
 
     O = Obj(fn,'a')
     O.smooth(1)
+    O.move_rescale([-0.5]*3, 100)
     O.animate_vis(count, count+1)
     O.apply_mat()
     objs.append(O)
