@@ -52,7 +52,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
   cpdef int find_nearby_sources(self)
 
-  cpdef int position_noise(self, np.ndarray[double, mode="c",ndim=2] a)
+  cpdef int position_noise(self, np.ndarray[double, mode="c",ndim=2] a, int scale_intensity)
 
-  cpdef int optimize_position(self, float step, int itt=*)
+  cpdef int optimize_position(self, float step, int itt, int scale_intensity)
 

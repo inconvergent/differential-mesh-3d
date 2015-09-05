@@ -346,14 +346,14 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cpdef int optimize_position(self, float step, int itt=1):
+  cpdef int optimize_position(self, float step, int itt, int scale_intensity):
 
     cdef int v
     cdef int i
 
     cdef float reject_scale = 1.0
     cdef float scale = 0.1
-    cdef float intensity
+    cdef float intensity = 1.0
 
     for i in xrange(itt):
 
@@ -365,7 +365,8 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
       self.__attract(scale)
       #self.__triangle_force(scale)
 
-      intensity = self.I[v]
+      if scale_intensity>0:
+        intensity = self.I[v]
 
       for v in range(self.vnum):
 
@@ -378,14 +379,16 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cpdef int position_noise(self, np.ndarray[double, mode="c",ndim=2] a):
+  cpdef int position_noise(self, np.ndarray[double, mode="c",ndim=2] a, int scale_intensity):
 
     cdef int v
-    cdef float intensity
+    cdef float intensity = 1
 
     for v in xrange(self.vnum):
 
-      intensity = self.I[v]
+      if scale_intensity>0:
+
+        intensity = self.I[v]
 
       self.X[v] += a[v,0]*intensity
       self.Y[v] += a[v,1]*intensity

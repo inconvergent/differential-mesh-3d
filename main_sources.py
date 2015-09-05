@@ -8,7 +8,7 @@ NMAX = int(10e7)
 ITT = int(10e7)
 OPT_ITT = 1
 
-STP = 1.0e-6
+STP = 1.0e-5
 NEARL = 0.0068
 H = NEARL*0.8
 
@@ -16,6 +16,8 @@ FARL = 0.03
 
 EXPORT_ITT = 100
 STAT_ITT = 50
+
+NUM_SOURCES = 10000
 
 
 def random_unit_vec(num, scale):
@@ -129,6 +131,7 @@ def main():
   from differentialMesh3d import DifferentialMesh3d
   from time import time
   from modules.helpers import print_stats
+  from numpy.random import random
 
   fn_obj = './data/base.obj'
   fn_out = './res/res'
@@ -139,18 +142,32 @@ def main():
   DM.initiate_faces(data['vertices'], data['faces'])
   DM.optimize_edges(H, STP)
 
+  #for e in xrange(DM.get_henum()):
+    #DM.set_edge_intensity(e, 0.4)
+
+  DM.set_edge_intensity(0,1)
+
+  sources = [(x,y,z) for x,y,z in random(size=(NUM_SOURCES, 3))]
+  DM.initialize_sources(sources, NEARL*5)
+
   for i in xrange(ITT):
 
     try:
 
       t1 = time()
 
-      DM.optimize_position(STP, OPT_ITT, scale_intensity=-1)
+      killed = DM.find_nearby_sources()
+      if killed>0:
+
+        print(killed)
+
+      DM.optimize_position(STP, OPT_ITT, scale_intensity=1)
+      DM.diminish_all_vertex_intensity(0.9998)
 
       vnum = DM.get_vnum()
 
       noise = random_unit_vec(vnum, 4.3*STP)
-      DM.position_noise(noise, scale_intensity=-1)
+      DM.position_noise(noise, scale_intensity=1)
 
       DM.optimize_edges(H, STP)
 
