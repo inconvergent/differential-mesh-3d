@@ -1,5 +1,7 @@
 # Differential Mesh 3d
 
+![ani](/img/ani.gif?raw=true "animation")
+
 Differential Mesh is an extension of the Hyphae
 (https://github.com/inconvergent/hyphae) algorithm. I started working on it
 with the intention of mimicking the growth of (certain types of) lichen. The
@@ -16,6 +18,7 @@ repositories:
 
 The code also depends on:
 
+*    `blender` (must be installed and the path added in the `run_*` files)
 *    `numpy`
 *    `scipy`
 *    `cython`
