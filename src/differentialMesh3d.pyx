@@ -122,6 +122,28 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
+  cdef int __smooth_intensity(self) nogil:
+
+    cdef int e
+    cdef int v1
+    cdef int v2
+    cdef float newi
+
+    for e in xrange(self.henum):
+
+      v1 = self.HE[e].first
+      v2 = self.HE[e].last
+
+      newi = (self.I[v1] + self.I[v2]) * 0.5
+
+      self.I[v1] = newi
+      self.I[v2] = newi
+
+    return 1
+
+  @cython.wraparound(False)
+  @cython.boundscheck(False)
+  @cython.nonecheck(False)
   @cython.cdivision(True)
   cdef int __reject(self, float scale) nogil:
     """
@@ -428,4 +450,11 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   cpdef int find_nearby_sources(self):
 
     return self.__find_nearby_sources()
+
+  @cython.wraparound(False)
+  @cython.boundscheck(False)
+  @cython.nonecheck(False)
+  cpdef int smooth_intensity(self):
+
+    return self.__smooth_intensity()
 

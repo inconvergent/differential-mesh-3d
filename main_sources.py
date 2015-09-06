@@ -6,16 +6,16 @@ from __future__ import print_function
 
 NMAX = int(10e7)
 ITT = int(10e7)
-OPT_ITT = 1
+OPT_ITT = 3
 
-STP = 1.0e-5
-NEARL = 0.0068
+STP = 1.0e-4
+NEARL = 0.0048
 H = NEARL*0.8
 
 FARL = 0.03
 
 EXPORT_ITT = 100
-STAT_ITT = 50
+STAT_ITT = 10
 
 NUM_SOURCES = 50000
 
@@ -141,13 +141,15 @@ def main(argv):
 
   data = load_obj(fn_obj)
   DM.initiate_faces(data['vertices'], data['faces'])
+
   DM.optimize_edges(H, STP)
 
-  DM.set_edge_intensity(10,1)
+  DM.set_edge_intensity(0,1.0)
+
 
   rnd = 0.1 + 0.8*random(size=(NUM_SOURCES, 3))
   sources = [(x,y,z) for x,y,z in rnd]
-  DM.initialize_sources(sources, NEARL*10)
+  DM.initialize_sources(sources, NEARL*4)
 
   for i in xrange(ITT):
 
@@ -155,15 +157,23 @@ def main(argv):
 
       t1 = time()
 
+      kill = DM.find_nearby_sources()
+      if kill>0:
+        print(kill)
+
       DM.optimize_position(STP, OPT_ITT, scale_intensity=1)
-      DM.diminish_all_vertex_intensity(0.9997)
 
       vnum = DM.get_vnum()
 
-      noise = random_unit_vec(vnum, 4.3*STP)
-      DM.position_noise(noise, scale_intensity=1)
+      #if i%10==0:
+        #noise = random_unit_vec(vnum, 4.3*STP)
+        #DM.position_noise(noise, scale_intensity=1)
 
       DM.optimize_edges(H, STP)
+
+      DM.smooth_intensity()
+
+      DM.diminish_all_vertex_intensity(0.999999)
 
       if i%STAT_ITT==0:
         print_stats(i, time()-t1, DM)

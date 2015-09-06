@@ -46,11 +46,15 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
   cdef int __find_nearby_sources(self) nogil
 
+  cdef int __smooth_intensity(self) nogil
+
   ## EXTERNAL
 
   cpdef int initialize_sources(self, list sources, float source_rad)
 
   cpdef int find_nearby_sources(self)
+
+  cpdef int smooth_intensity(self)
 
   cpdef int position_noise(self, np.ndarray[double, mode="c",ndim=2] a, int scale_intensity)
 

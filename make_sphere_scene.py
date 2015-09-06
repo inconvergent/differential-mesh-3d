@@ -53,7 +53,7 @@ class Obj(object):
     world = obj.matrix_world
     mat = bpy.data.materials["Material"]
 
-    base_scale = 0.6
+    base_scale = 0.45
 
     bpy.ops.surface.primitive_nurbs_surface_sphere_add(
       radius = 1,
@@ -66,7 +66,6 @@ class Obj(object):
 
     mesh = sphere.data
     num = len(obj.data.polygons)
-
 
     for i,p in enumerate(obj.data.polygons):
 
