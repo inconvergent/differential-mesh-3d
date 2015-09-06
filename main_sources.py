@@ -17,7 +17,7 @@ FARL = 0.03
 EXPORT_ITT = 100
 STAT_ITT = 50
 
-NUM_SOURCES = 10000
+NUM_SOURCES = 50000
 
 
 def random_unit_vec(num, scale):
@@ -143,11 +143,11 @@ def main(argv):
   DM.initiate_faces(data['vertices'], data['faces'])
   DM.optimize_edges(H, STP)
 
-  DM.set_edge_intensity(0,1)
+  DM.set_edge_intensity(10,1)
 
   rnd = 0.1 + 0.8*random(size=(NUM_SOURCES, 3))
   sources = [(x,y,z) for x,y,z in rnd]
-  DM.initialize_sources(sources, NEARL*5)
+  DM.initialize_sources(sources, NEARL*10)
 
   for i in xrange(ITT):
 
@@ -155,8 +155,8 @@ def main(argv):
 
       t1 = time()
 
-      DM.optimize_position(STP, OPT_ITT, scale_intensity=-1)
-      DM.diminish_all_vertex_intensity(0.9998)
+      DM.optimize_position(STP, OPT_ITT, scale_intensity=1)
+      DM.diminish_all_vertex_intensity(0.9997)
 
       vnum = DM.get_vnum()
 

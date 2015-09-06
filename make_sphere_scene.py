@@ -36,35 +36,59 @@ class Obj(object):
 
     obj.scale = ((sx,sy,sz))
 
+  def del_mesh(self):
+
+    bpy.ops.object.select_all(action='DESELECT')
+    self.obj.select=True
+    bpy.ops.object.delete()
+
   def spheres(self):
+
+    from numpy import row_stack
+    from numpy import diff
+    from numpy.linalg import norm
 
     scn = bpy.context.scene
     obj = self.obj
     world = obj.matrix_world
     mat = bpy.data.materials["Material"]
 
-    levels = 1
+    base_scale = 0.6
 
     bpy.ops.surface.primitive_nurbs_surface_sphere_add(
-      radius = 0.2,
+      radius = 1,
       location = (0,0,0)
     )
     sphere = bpy.context.active_object
     sphere.data.materials.append(mat)
-
-    bpy.ops.object.modifier_add(type='SUBSURF')
-    sphere.modifiers['Subsurf'].levels = levels
-    sphere.modifiers['Subsurf'].render_levels = levels
+    bpy.context.active_object.hide = True
+    bpy.context.active_object.hide_render = True
 
     mesh = sphere.data
+    num = len(obj.data.polygons)
 
-    for i,v in enumerate(obj.data.polygons):
-      loc = world*v.center
-      ob = bpy.data.objects.new('one', mesh)
-      ob.location = loc
-      scn.objects.link(ob)
-      print(i)
 
+    for i,p in enumerate(obj.data.polygons):
+
+      loc = world*p.center
+
+      vco = [world*obj.data.vertices[v].co for v in p.vertices]
+      vco = diff(row_stack(vco + [vco[0]]),axis=0)
+      rad = norm(vco, axis=1).mean() * base_scale
+
+      o = bpy.data.objects.new('one', mesh)
+      o.location = loc
+
+      sx,sy,sz = o.scale
+      sx *= rad
+      sy *= rad
+      sz *= rad
+
+      o.scale = ((sx,sy,sz))
+      scn.objects.link(o)
+
+      if i%100==0:
+        print(i, num)
 
   #def __set_vis(self, frame, vis=True):
 
@@ -110,6 +134,7 @@ def main(argv):
   O = Obj(fn,'a')
   O.move_rescale([-0.5]*3, 100)
   O.spheres()
+  O.del_mesh()
 
   print('\ntime:',time()-t1,'\n\n')
 
