@@ -18,7 +18,7 @@ repositories:
 
 The code also depends on:
 
-*    `blender` (must be installed and the path added in the `run_*` files)
+*    `blender` (must be installed, and the path added to `./settings` files)
 *    `numpy`
 *    `scipy`
 *    `cython`

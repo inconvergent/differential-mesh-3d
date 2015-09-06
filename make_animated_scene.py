@@ -83,11 +83,12 @@ class Obj(object):
     self.obj.data.materials.append(mat)
 
 
-def main():
+def main(argv):
 
   from time import time
   import glob, os
 
+  name = argv[0]
   dirname = './res/'
 
   objs = []
@@ -95,7 +96,7 @@ def main():
   count = 0
 
   os.chdir(dirname)
-  for fn in sorted(glob.glob('res_*.obj')):
+  for fn in sorted(glob.glob('{:s}_*.obj'.format(name))):
 
     print('importing: ' + fn)
 
@@ -116,10 +117,13 @@ def main():
   bpy.data.scenes['Scene'].frame_end = count-1
 
   os.chdir('..')
-  bpy.ops.wm.save_as_mainfile(filepath='./final.blend')
+  bpy.ops.wm.save_as_mainfile(filepath='./scene_{:s}.blend'.format(name))
 
 
 if __name__ == '__main__':
 
-  main()
+  import sys
+  argv = sys.argv
+  argv = argv[argv.index("--") + 1:]
+  main(argv)
 

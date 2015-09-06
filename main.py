@@ -124,14 +124,15 @@ def export_obj(dm,obj_name,fn):
     print('done.')
 
 
-def main():
+def main(argv):
 
   from differentialMesh3d import DifferentialMesh3d
   from time import time
   from modules.helpers import print_stats
 
+  name = argv[0]
   fn_obj = './data/base.obj'
-  fn_out = './res/res'
+  fn_out = './res/{:s}'.format(name)
 
   DM = DifferentialMesh3d(NMAX, FARL, NEARL, FARL)
 
@@ -168,5 +169,8 @@ def main():
 
 if __name__ == '__main__' :
 
-    main()
+  import sys
+
+  argv = sys.argv
+  main(argv[1:])
 

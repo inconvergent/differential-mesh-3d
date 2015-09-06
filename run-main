@@ -1,10 +1,18 @@
 #!/bin/bash
 
 set -e
-
+source settings
 here=$(pwd)
+name="$1"
 
-rm -f ./res/res*.obj
+if [ -z "$name" ]
+then
+  name=res
+fi
+echo "running simulation using name: $name."
 
-./main.py
+
+rm -f ./res/"$name"*.obj
+
+python main.py "$name"
 
