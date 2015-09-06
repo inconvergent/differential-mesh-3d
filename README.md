@@ -4,8 +4,9 @@
 
 Differential Mesh is an extension of the Hyphae
 (https://github.com/inconvergent/hyphae) algorithm. I started working on it
-with the intention of mimicking the growth of (certain types of) lichen. The
-results, to me, are equal parts crystal-like and biological.
+with the intention of mimicking the growth of (certain types of) lichen.
+
+This three dimensional extension is something else entirely ...
 
 ## Prerequisites
 
@@ -26,10 +27,10 @@ The code also depends on:
 
 ## Running it on Linux (Ubuntu)
 
-To install the libraries locally, run `make`. I have only tested this code in
-Ubuntu 14.04 LTS, but my guess is that it should work on most other platforms
-platforms as well.  However i know that the scripted install in `make` will not
-work in Windows
+To install the libraries locally, run `run-install`. I have only tested this
+code in Ubuntu 14.04 LTS, but my guess is that it should work on most other
+platforms platforms as well.  However i know that the scripted install in
+`run-install` will not work in Windows
 
 ## Running it on Windows?
 

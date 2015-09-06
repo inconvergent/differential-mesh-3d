@@ -14,5 +14,5 @@ echo "running simulation using name: $name."
 
 rm -f ./res/"$name"*.obj
 
-python main_sources.py
+python main_sources.py "$name"
 
