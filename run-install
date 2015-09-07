@@ -4,7 +4,7 @@ set -e
 source settings
 here=$(pwd)
 
-pyx=$(shell find ./src -iname "*.pyx"| sort)
+pyx=$()
 
 rm -f src/*.html src/*.c
 rm -f *.so
@@ -12,6 +12,9 @@ rm -f *.pyc
 rm -rf build
 rm -rf modules/*.pyc
 
+echo "asdf"
+
 python setup.py build_ext --inplace
-cython -a "$pyx"
+
+find ./src -iname "*.pyx" | xargs cython -a
 
