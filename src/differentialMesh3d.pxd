@@ -12,37 +12,37 @@ from zonemap3d cimport Zonemap3d
 
 cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
-  cdef float nearl
+  cdef double nearl
 
-  cdef float farl
+  cdef double farl
 
   cdef int num_sources
 
-  cdef float source_rad
+  cdef double source_rad
 
-  cdef float *DX
+  cdef double *DX
 
-  cdef float *DY
+  cdef double *DY
 
-  cdef float *DZ
+  cdef double *DZ
 
-  cdef float *SX
+  cdef double *SX
 
-  cdef float *SY
+  cdef double *SY
 
-  cdef float *SZ
+  cdef double *SZ
 
   cdef Zonemap3d source_zonemap
 
   ## FUNCTIONS
 
-  cdef int __edge_vertex_force(self, int he1, int v1, float scale) nogil
+  cdef int __edge_vertex_force(self, int he1, int v1, double scale) nogil
 
-  cdef int __triangle_force(self, float scale) nogil
+  cdef int __triangle_force(self, double scale) nogil
 
-  cdef int __reject(self, float scale) nogil
+  cdef int __reject(self, double scale) nogil
 
-  cdef int __attract(self, float scale) nogil
+  cdef int __attract(self, double scale) nogil
 
   cdef int __find_nearby_sources(self) nogil
 
@@ -50,7 +50,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
   ## EXTERNAL
 
-  cpdef int initialize_sources(self, list sources, float source_rad)
+  cpdef int initialize_sources(self, list sources, double source_rad)
 
   cpdef int find_nearby_sources(self)
 
@@ -58,5 +58,5 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
   cpdef int position_noise(self, np.ndarray[double, mode="c",ndim=2] a, int scale_intensity)
 
-  cpdef int optimize_position(self, float step, int itt, int scale_intensity)
+  cpdef int optimize_position(self, double step, int itt, int scale_intensity)
 

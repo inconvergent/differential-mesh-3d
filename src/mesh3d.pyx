@@ -14,7 +14,7 @@ from libc.math cimport fabs
 from libc.math cimport M_PI
 
 from helpers cimport int_array_init
-from helpers cimport float_array_init
+from helpers cimport double_array_init
 from helpers cimport vcross
 
 import numpy as np
@@ -24,7 +24,7 @@ cimport cython
 #cimport zonemap3d
 
 
-cdef float TWOPI = M_PI*2
+cdef double TWOPI = M_PI*2
 
 
 def dict_list_add(dict d, k, v):
@@ -53,7 +53,7 @@ cdef class Mesh3d:
 
   """
 
-  def __init__(self, int nmax, float zonewidth):
+  def __init__(self, int nmax, double zonewidth):
     """
     initialize triangular mesh.
 
@@ -92,17 +92,17 @@ cdef class Mesh3d:
 
   def __cinit__(self, int nmax, *arg, **args):
 
-    self.X = <float *>malloc(nmax*sizeof(float))
-    float_array_init(self.X,nmax,0.)
+    self.X = <double *>malloc(nmax*sizeof(double))
+    double_array_init(self.X,nmax,0.)
 
-    self.Y = <float *>malloc(nmax*sizeof(float))
-    float_array_init(self.Y,nmax,0.)
+    self.Y = <double *>malloc(nmax*sizeof(double))
+    double_array_init(self.Y,nmax,0.)
 
-    self.Z = <float *>malloc(nmax*sizeof(float))
-    float_array_init(self.Z,nmax,0.)
+    self.Z = <double *>malloc(nmax*sizeof(double))
+    double_array_init(self.Z,nmax,0.)
 
-    self.I = <float *>malloc(nmax*sizeof(float))
-    float_array_init(self.I,nmax,0.)
+    self.I = <double *>malloc(nmax*sizeof(double))
+    double_array_init(self.I,nmax,0.)
 
     self.HE = <sHE *>malloc(nmax*sizeof(sHE))
 
@@ -133,7 +133,7 @@ cdef class Mesh3d:
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cdef int __valid_new_vertex(self, float x, float y, float z) nogil:
+  cdef int __valid_new_vertex(self, double x, double y, double z) nogil:
     """
     check that x,y is within unit square
     """
@@ -155,7 +155,7 @@ cdef class Mesh3d:
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cdef int __safe_vertex_positions(self, float limit) nogil:
+  cdef int __safe_vertex_positions(self, double limit) nogil:
     """
     check that all vertices are within limit of unit square boundary
     """
@@ -182,14 +182,14 @@ cdef class Mesh3d:
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cdef float __get_edge_intensity(self, int he1) nogil:
+  cdef double __get_edge_intensity(self, int he1) nogil:
 
     return (self.I[self.HE[he1].first]+self.I[self.HE[he1].last])*0.5
 
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cdef void __set_vertex_intensity(self, int v1, float i) nogil:
+  cdef void __set_vertex_intensity(self, int v1, double i) nogil:
 
     self.I[v1] = i
 
@@ -198,7 +198,7 @@ cdef class Mesh3d:
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cdef void __set_edge_intensity(self, int he1, float i) nogil:
+  cdef void __set_edge_intensity(self, int he1, double i) nogil:
 
     self.I[self.HE[he1].first] = i
     self.I[self.HE[he1].last] = i
@@ -208,7 +208,7 @@ cdef class Mesh3d:
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cdef int __new_vertex(self, float x, float y, float z) nogil:
+  cdef int __new_vertex(self, double x, double y, double z) nogil:
     """
     adds a vertex x,y. returns id of new vertex
     """
@@ -454,7 +454,7 @@ cdef class Mesh3d:
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cdef int __flip_edge(self, int he1, float limit) nogil:
+  cdef int __flip_edge(self, int he1, double limit) nogil:
 
     if self.__is_surface_edge(he1)>0:
 
@@ -474,11 +474,11 @@ cdef class Mesh3d:
     cdef int c = self.HE[ca1].first
     cdef int d = self.HE[db1].first
 
-    cdef float ablen = sqrt(cpow(self.X[a]-self.X[b],2)+
+    cdef double ablen = sqrt(cpow(self.X[a]-self.X[b],2)+
                             cpow(self.Y[a]-self.Y[b],2)+
                             cpow(self.Z[a]-self.Z[b],2))
 
-    cdef float dclen = sqrt(cpow(self.X[d]-self.X[c],2)+
+    cdef double dclen = sqrt(cpow(self.X[d]-self.X[c],2)+
                             cpow(self.Y[d]-self.Y[c],2)+
                             cpow(self.Z[d]-self.Z[c],2))
 
@@ -577,9 +577,9 @@ cdef class Mesh3d:
 
       return -1
 
-    cdef float x = (self.X[a] + self.X[b])*0.5
-    cdef float y = (self.Y[a] + self.Y[b])*0.5
-    cdef float z = (self.Z[a] + self.Z[b])*0.5
+    cdef double x = (self.X[a] + self.X[b])*0.5
+    cdef double y = (self.Y[a] + self.Y[b])*0.5
+    cdef double z = (self.Z[a] + self.Z[b])*0.5
 
     cdef int e = self.__new_vertex(x,y,z)
 
@@ -645,9 +645,9 @@ cdef class Mesh3d:
 
       return -1
 
-    cdef float x = (self.X[a] + self.X[b])*0.5
-    cdef float y = (self.Y[a] + self.Y[b])*0.5
-    cdef float z = (self.Z[a] + self.Z[b])*0.5
+    cdef double x = (self.X[a] + self.X[b])*0.5
+    cdef double y = (self.Y[a] + self.Y[b])*0.5
+    cdef double z = (self.Z[a] + self.Z[b])*0.5
 
     cdef int e = self.__new_vertex(x,y,z)
 
@@ -680,7 +680,7 @@ cdef class Mesh3d:
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cdef int __split_all_longest_triangle_edges(self, float limit) nogil:
+  cdef int __split_all_longest_triangle_edges(self, double limit) nogil:
 
     cdef int fnum = self.fnum
     cdef int f
@@ -689,9 +689,9 @@ cdef class Mesh3d:
     cdef int he2
     cdef int he3
 
-    cdef float l1
-    cdef float l2
-    cdef float l3
+    cdef double l1
+    cdef double l2
+    cdef double l3
 
     for f in reversed(xrange(fnum)):
 
@@ -734,13 +734,13 @@ cdef class Mesh3d:
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cdef float __get_edge_length(self, int he) nogil:
+  cdef double __get_edge_length(self, int he) nogil:
 
     cdef int first = self.HE[he].first
     cdef int last = self.HE[he].last
-    cdef float dx = self.X[first] - self.X[last]
-    cdef float dy = self.Y[first] - self.Y[last]
-    cdef float dz = self.Z[first] - self.Z[last]
+    cdef double dx = self.X[first] - self.X[last]
+    cdef double dy = self.Y[first] - self.Y[last]
+    cdef double dz = self.Z[first] - self.Z[last]
 
     return sqrt(dx*dx+dy*dy+dz*dz)
 
@@ -817,9 +817,9 @@ cdef class Mesh3d:
   #@cython.nonecheck(False)
   cpdef int initiate_faces(self, list vertices, list faces):
 
-    cdef float x
-    cdef float y
-    cdef float z
+    cdef double x
+    cdef double y
+    cdef double z
 
     cdef int he1
     cdef int he2
@@ -893,24 +893,24 @@ cdef class Mesh3d:
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cpdef int safe_vertex_positions(self, float limit):
+  cpdef int safe_vertex_positions(self, double limit):
 
     return self.__safe_vertex_positions(limit)
 
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cpdef list new_faces_in_ngon(self, float x1, float y1, float z1, float rad, int num):
+  cpdef list new_faces_in_ngon(self, double x1, double y1, double z1, double rad, int num):
 
     cdef list vertices = []
     cdef list edges = []
     cdef list outside_edges = []
 
-    cdef float the = 0.0
-    cdef float thediff = TWOPI/num
-    cdef float x
-    cdef float y
-    cdef float z
+    cdef double the = 0.0
+    cdef double thediff = TWOPI/num
+    cdef double x
+    cdef double y
+    cdef double z
     cdef int f
     cdef int i
     cdef int first
@@ -971,7 +971,7 @@ cdef class Mesh3d:
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cpdef int flip_edge(self, int he1, float limit):
+  cpdef int flip_edge(self, int he1, double limit):
 
     return self.__flip_edge(he1, limit)
 
@@ -985,7 +985,7 @@ cdef class Mesh3d:
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cpdef int optimize_edges(self, float split_limit, float flip_limit):
+  cpdef int optimize_edges(self, double split_limit, double flip_limit):
 
     cdef int he1
 
@@ -1069,14 +1069,14 @@ cdef class Mesh3d:
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cpdef float get_edge_intensity(self, int he1):
+  cpdef double get_edge_intensity(self, int he1):
 
     return self.__get_edge_intensity(he1)
 
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cpdef int set_vertex_intensity(self, int v1, float i):
+  cpdef int set_vertex_intensity(self, int v1, double i):
 
     self.__set_vertex_intensity(v1, i)
 
@@ -1085,7 +1085,7 @@ cdef class Mesh3d:
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cpdef int set_edge_intensity(self, int he1, float i):
+  cpdef int set_edge_intensity(self, int he1, double i):
 
     self.__set_edge_intensity(he1, i)
 
@@ -1094,7 +1094,7 @@ cdef class Mesh3d:
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cpdef float get_triangle_intensity(self, int f1):
+  cpdef double get_triangle_intensity(self, int f1):
 
     cdef int he1 = self.FHE[f1]
     cdef int he2 = self.HE[he1].next
@@ -1119,7 +1119,7 @@ cdef class Mesh3d:
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cpdef int diminish_all_vertex_intensity(self, float d):
+  cpdef int diminish_all_vertex_intensity(self, double d):
 
     cdef int v
 
@@ -1143,7 +1143,7 @@ cdef class Mesh3d:
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cpdef float get_edge_length(self, int he1):
+  cpdef double get_edge_length(self, int he1):
 
     return self.__get_edge_length(he1)
 

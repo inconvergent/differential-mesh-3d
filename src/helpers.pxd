@@ -10,18 +10,18 @@ cdef extern from "stdlib.h":
        int(*compar)(const void *, const void *)) nogil
 
 cdef inline void int_array_init(int *a, int n, int v):
-  """
-  initialize integer array a of length n with integer value v
-  """
   cdef int i
   for i in xrange(n):
     a[i] = v
   return
 
 cdef inline void float_array_init(float *a, int n, float v):
-  """
-  initialize float array a of length n with float value v
-  """
+  cdef int i
+  for i in xrange(n):
+    a[i] = v
+  return
+
+cdef inline void double_array_init(double *a, int n, double v):
   cdef int i
   for i in xrange(n):
     a[i] = v
@@ -42,34 +42,34 @@ cdef inline void float_array_init(float *a, int n, float v):
   #else:
     #return 0
 
-cdef inline float xcross(float x1, float y1,
-                         float x2, float y2) nogil:
+cdef inline double xcross(double x1, double y1,
+                         double x2, double y2) nogil:
   """
   cross [x1,y1] and [x2,y2]
   """
-  
+
   return x1*y2-y1*x2
 
-cdef inline float vcross(float x1, float y1,
-                         float x2, float y2, float x3, float y3) nogil:
+cdef inline double vcross(double x1, double y1,
+                         double x2, double y2, double x3, double y3) nogil:
   """
   cross of v12 and v13
   """
-  
-  cdef float xa = x2-x1
-  cdef float ya = y2-y1
-  cdef float xb = x3-x1
-  cdef float yb = y3-y1
+
+  cdef double xa = x2-x1
+  cdef double ya = y2-y1
+  cdef double xb = x3-x1
+  cdef double yb = y3-y1
   return xa*yb-ya*xb
 
-cdef inline float cross(float x1, float y1, float x2, float y2, 
-                        float x3, float y3, float x4, float y4) nogil:
+cdef inline double cross(double x1, double y1, double x2, double y2,
+                        double x3, double y3, double x4, double y4) nogil:
   """
   cross of v12 and v34
   """
 
-  cdef float xa = x2-x1
-  cdef float ya = y2-y1
-  cdef float xb = x4-x3
-  cdef float yb = y4-y3
+  cdef double xa = x2-x1
+  cdef double ya = y2-y1
+  cdef double xb = x4-x3
+  cdef double yb = y4-y3
   return xa*yb-ya*xb

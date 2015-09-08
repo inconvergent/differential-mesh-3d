@@ -28,17 +28,17 @@ cdef class Mesh3d:
 
   cdef int nz
 
-  cdef float zonewidth
+  cdef double zonewidth
 
   ## ARRAYS
 
-  cdef float *X
+  cdef double *X
 
-  cdef float *Y
+  cdef double *Y
 
-  cdef float *Z
+  cdef double *Z
 
-  cdef float *I
+  cdef double *I
 
   cdef sHE *HE
 
@@ -52,9 +52,9 @@ cdef class Mesh3d:
 
   ## INTERNAL
 
-  cdef int __valid_new_vertex(self, float x, float y, float z) nogil
+  cdef int __valid_new_vertex(self, double x, double y, double z) nogil
 
-  cdef int __new_vertex(self, float x, float y, float z) nogil
+  cdef int __new_vertex(self, double x, double y, double z) nogil
 
   cdef int __new_edge(self, int first, int last) nogil
 
@@ -76,7 +76,7 @@ cdef class Mesh3d:
 
   cdef int __edge_duplicate_test(self, int he1, int a, int b) nogil
 
-  cdef int __flip_edge(self, int he1, float limit) nogil
+  cdef int __flip_edge(self, int he1, double limit) nogil
 
   cdef int __split_edge(self, int he1) nogil
 
@@ -86,21 +86,21 @@ cdef class Mesh3d:
 
   cdef int __split_surface_edge(self, int he1) nogil
 
-  cdef int __split_all_longest_triangle_edges(self, float limit) nogil
+  cdef int __split_all_longest_triangle_edges(self, double limit) nogil
 
-  cdef float __get_edge_length(self, int he1) nogil
+  cdef double __get_edge_length(self, int he1) nogil
 
   cdef int __edge_integrity(self, int he1) nogil
 
   cdef int __triangle_integrity(self, int face) nogil
 
-  cdef int __safe_vertex_positions(self, float limit) nogil
+  cdef int __safe_vertex_positions(self, double limit) nogil
 
-  cdef float __get_edge_intensity(self, int he1) nogil
+  cdef double __get_edge_intensity(self, int he1) nogil
 
-  cdef void __set_vertex_intensity(self, int v1, float i) nogil
+  cdef void __set_vertex_intensity(self, int v1, double i) nogil
 
-  cdef void __set_edge_intensity(self, int he1, float i) nogil
+  cdef void __set_edge_intensity(self, int he1, double i) nogil
 
   ## EXTERNAL
 
@@ -108,17 +108,17 @@ cdef class Mesh3d:
 
   cpdef int triangle_integrity(self, int face)
 
-  cpdef int safe_vertex_positions(self, float limit)
+  cpdef int safe_vertex_positions(self, double limit)
 
-  cpdef list new_faces_in_ngon(self, float x1, float y1, float z1, float rad, int num)
+  cpdef list new_faces_in_ngon(self, double x1, double y1, double z1, double rad, int num)
 
   cpdef int next_surface(self, int he1, int direction)
 
-  cpdef int flip_edge(self, int he1, float limit)
+  cpdef int flip_edge(self, int he1, double limit)
 
   cpdef int split_edge(self, int he1)
 
-  cpdef int optimize_edges(self, float split_limit, float flip_limit)
+  cpdef int optimize_edges(self, double split_limit, double flip_limit)
 
   ## GET DATA
 
@@ -128,13 +128,13 @@ cdef class Mesh3d:
 
   cpdef int np_get_triangles_gen(self, np.ndarray[long, mode="c",ndim=1] a)
 
-  cpdef float get_edge_intensity(self, int he1)
+  cpdef double get_edge_intensity(self, int he1)
 
-  cpdef int set_vertex_intensity(self, int v1, float i)
+  cpdef int set_vertex_intensity(self, int v1, double i)
 
-  cpdef int set_edge_intensity(self, int he1, float i)
+  cpdef int set_edge_intensity(self, int he1, double i)
 
-  cpdef float get_triangle_intensity(self, int f1)
+  cpdef double get_triangle_intensity(self, int f1)
 
   cpdef list get_triangle_edges(self, int f1)
 
@@ -142,11 +142,11 @@ cdef class Mesh3d:
 
   cpdef int initiate_faces(self, list vertices, list faces)
 
-  cpdef int diminish_all_vertex_intensity(self, float d)
+  cpdef int diminish_all_vertex_intensity(self, double d)
 
   cpdef int is_surface_edge(self, int t1)
 
-  cpdef float get_edge_length(self, int he1)
+  cpdef double get_edge_length(self, int he1)
 
   cpdef dict get_edge_dict(self, int he1)
 

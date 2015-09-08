@@ -14,7 +14,7 @@ from libc.math cimport sqrt
 from libc.math cimport cos
 from libc.math cimport sin
 
-from helpers cimport float_array_init
+from helpers cimport double_array_init
 from helpers cimport int_array_init
 from helpers cimport vcross
 
@@ -24,7 +24,7 @@ cimport numpy as np
 
 cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
-  def __init__(self, int nmax, float zonewidth, float nearl, float farl):
+  def __init__(self, int nmax, double zonewidth, double nearl, double farl):
 
     mesh3d.Mesh3d.__init__(self, nmax, zonewidth)
 
@@ -51,17 +51,17 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
   def __cinit__(self, int nmax, *arg, **args):
 
-    self.DX = <float *>malloc(nmax*sizeof(float))
+    self.DX = <double *>malloc(nmax*sizeof(double))
 
-    self.DY = <float *>malloc(nmax*sizeof(float))
+    self.DY = <double *>malloc(nmax*sizeof(double))
 
-    self.DZ = <float *>malloc(nmax*sizeof(float))
+    self.DZ = <double *>malloc(nmax*sizeof(double))
 
-    self.SX = <float *>malloc(nmax*sizeof(float))
+    self.SX = <double *>malloc(nmax*sizeof(double))
 
-    self.SY = <float *>malloc(nmax*sizeof(float))
+    self.SY = <double *>malloc(nmax*sizeof(double))
 
-    self.SZ = <float *>malloc(nmax*sizeof(float))
+    self.SZ = <double *>malloc(nmax*sizeof(double))
 
     return
 
@@ -88,10 +88,10 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
     cdef int v
     cdef int n
-    cdef float rad = self.source_rad
+    cdef double rad = self.source_rad
     cdef int vnum = self.vnum
 
-    cdef int asize = self.source_zonemap.__get_greatest_zone_size()*9
+    cdef int asize = self.source_zonemap.__get_greatest_zone_size()*27
     cdef int *vertices
 
     cdef int num
@@ -127,7 +127,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     cdef int e
     cdef int v1
     cdef int v2
-    cdef float newi
+    cdef double newi
 
     for e in xrange(self.henum):
 
@@ -145,33 +145,33 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.boundscheck(False)
   @cython.nonecheck(False)
   @cython.cdivision(True)
-  cdef int __reject(self, float scale) nogil:
+  cdef int __reject(self, double scale) nogil:
     """
     all vertices will move away from all neighboring (closer than farl)
     vertices
     """
 
-    cdef float farl = self.farl
+    cdef double farl = self.farl
     cdef int vnum = self.vnum
 
     cdef int v
     cdef int k
     cdef int neigh
 
-    cdef float x
-    cdef float y
-    cdef float z
-    cdef float dx
-    cdef float dy
-    cdef float dz
-    cdef float nrm
-    cdef float force
+    cdef double x
+    cdef double y
+    cdef double z
+    cdef double dx
+    cdef double dy
+    cdef double dz
+    cdef double nrm
+    cdef double force
 
-    cdef float resx = 0.
-    cdef float resy = 0.
-    cdef float resz = 0.
+    cdef double resx = 0.
+    cdef double resy = 0.
+    cdef double resz = 0.
 
-    cdef int asize = self.zonemap.__get_greatest_zone_size()*9
+    cdef int asize = self.zonemap.__get_greatest_zone_size()*27
     cdef int *vertices
     cdef int neighbor_num
 
@@ -225,7 +225,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.boundscheck(False)
   @cython.nonecheck(False)
   @cython.cdivision(True)
-  cdef int __attract(self, float scale) nogil:
+  cdef int __attract(self, double scale) nogil:
     """
     vertices will move towards all connected vertices further away than
     nearl
@@ -235,14 +235,14 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     cdef int v2
     cdef int k
 
-    cdef float nearl = self.nearl
+    cdef double nearl = self.nearl
 
-    cdef float dx
-    cdef float dy
-    cdef float dz
-    cdef float nrm
+    cdef double dx
+    cdef double dy
+    cdef double dz
+    cdef double nrm
 
-    cdef float s
+    cdef double s
 
     for k in xrange(self.henum):
 
@@ -309,23 +309,23 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.boundscheck(False)
   @cython.nonecheck(False)
   @cython.cdivision(True)
-  cdef int __edge_vertex_force(self, int he1, int v1, float scale) nogil:
+  cdef int __edge_vertex_force(self, int he1, int v1, double scale) nogil:
 
     cdef int henum = self.henum
-    cdef float nearl = self.nearl
+    cdef double nearl = self.nearl
 
     cdef int a = self.HE[he1].first
     cdef int b = self.HE[he1].last
 
-    cdef float x = (self.X[b]+self.X[a])*0.5
-    cdef float y = (self.Y[b]+self.Y[a])*0.5
-    cdef float z = (self.Z[b]+self.Z[a])*0.5
+    cdef double x = (self.X[b]+self.X[a])*0.5
+    cdef double y = (self.Y[b]+self.Y[a])*0.5
+    cdef double z = (self.Z[b]+self.Z[a])*0.5
 
-    cdef float dx = self.X[v1]-x
-    cdef float dy = self.Y[v1]-y
-    cdef float dz = self.Z[v1]-z
+    cdef double dx = self.X[v1]-x
+    cdef double dy = self.Y[v1]-y
+    cdef double dz = self.Z[v1]-z
 
-    cdef float nrm = sqrt(dx*dx+dy*dy+dz*dz)
+    cdef double nrm = sqrt(dx*dx+dy*dy+dz*dz)
 
     if nrm<=0:
 
@@ -347,7 +347,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cdef int __triangle_force(self, float scale) nogil:
+  cdef int __triangle_force(self, double scale) nogil:
 
     cdef int ab
     cdef int bc
@@ -368,20 +368,20 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cpdef int optimize_position(self, float step, int itt, int scale_intensity):
+  cpdef int optimize_position(self, double step, int itt, int scale_intensity):
 
     cdef int v
     cdef int i
 
-    cdef float reject_scale = 1.0
-    cdef float scale = 0.1
-    cdef float intensity = 1.0
+    cdef double reject_scale = 1.0
+    cdef double scale = 0.1
+    cdef double intensity = 1.0
 
     for i in xrange(itt):
 
-      float_array_init(self.DX, self.vnum, 0.)
-      float_array_init(self.DY, self.vnum, 0.)
-      float_array_init(self.DZ, self.vnum, 0.)
+      double_array_init(self.DX, self.vnum, 0.)
+      double_array_init(self.DY, self.vnum, 0.)
+      double_array_init(self.DZ, self.vnum, 0.)
 
       self.__reject(reject_scale)
       self.__attract(scale)
@@ -404,7 +404,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   cpdef int position_noise(self, np.ndarray[double, mode="c",ndim=2] a, int scale_intensity):
 
     cdef int v
-    cdef float intensity = 1
+    cdef double intensity = 1
 
     for v in xrange(self.vnum):
 
@@ -420,12 +420,12 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cpdef int initialize_sources(self, list sources, float source_rad):
+  cpdef int initialize_sources(self, list sources, double source_rad):
 
     cdef int i
     cdef int num_sources
-    cdef float x
-    cdef float y
+    cdef double x
+    cdef double y
 
     num_sources = len(sources)
     self.num_sources = num_sources

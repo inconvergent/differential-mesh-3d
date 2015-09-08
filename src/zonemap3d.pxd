@@ -25,11 +25,11 @@ cdef class Zonemap3d:
 
   ## ARRAYS
 
-  cdef float *X
+  cdef double *X
 
-  cdef float *Y
+  cdef double *Y
 
-  cdef float *Z
+  cdef double *Z
 
   cdef int *VZ
 
@@ -49,19 +49,21 @@ cdef class Zonemap3d:
 
   cdef int __remove_v_from_zone(self, int zone, int v1) nogil
 
-  cdef int __get_z(self, float x, float y, float z) nogil
+  cdef int __get_z(self, double x, double y, double z) nogil
 
   cdef int __update_v(self, int v1) nogil
 
-  cdef int __sphere_vertices(self, float x, float y, float z, float rad, int *vertices) nogil
+  cdef int __sphere_vertices(self, double x, double y, double z, double rad, int *vertices) nogil
 
-  cdef int __sphere_is_free(self, float x, float y, float z, float rad) nogil
+  cdef int __sphere_is_free(self, double x, double y, double z, double rad) nogil
 
   cdef int __get_greatest_zone_size(self) nogil
 
-  cdef void __assign_xyz_arrays(self, float *x, float *y, float *z) nogil
+  cdef void __assign_xyz_arrays(self, double *x, double *y, double *z) nogil
 
   ## INFO
+
+  cpdef list _perftest(self, int nmax, int num_points, int num_lookup)
 
   cpdef int add_vertex(self, int v1)
 
@@ -69,7 +71,7 @@ cdef class Zonemap3d:
 
   cpdef int update_v(self, int v1)
 
-  cpdef int sphere_is_free(self, float x, float y, float z, float rad)
+  cpdef int sphere_is_free(self, double x, double y, double z, double rad)
 
   cpdef int get_greatest_zone_size(self)
 
