@@ -36,17 +36,17 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
   ## FUNCTIONS
 
-  cdef int __edge_vertex_force(self, int he1, int v1, double scale) #nogil
+  cdef int __edge_vertex_force(self, int he1, int v1, double scale) nogil
 
-  cdef int __triangle_force(self, double scale) #nogil
+  cdef int __triangle_force(self, double scale) nogil
 
-  cdef int __reject(self, double scale) #nogil
+  cdef int __reject(self, double scale) nogil
 
-  cdef int __attract(self, double scale) #nogil
+  cdef int __attract(self, double scale) nogil
 
-  cdef int __find_nearby_sources(self) #nogil
+  cdef int __find_nearby_sources(self) nogil
 
-  cdef int __smooth_intensity(self) #nogil
+  cdef int __smooth_intensity(self) nogil
 
   ## EXTERNAL
 

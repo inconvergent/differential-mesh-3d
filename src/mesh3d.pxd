@@ -52,55 +52,55 @@ cdef class Mesh3d:
 
   ## INTERNAL
 
-  cdef int __valid_new_vertex(self, double x, double y, double z) #nogil
+  cdef int __valid_new_vertex(self, double x, double y, double z) nogil
 
-  cdef int __new_vertex(self, double x, double y, double z) #nogil
+  cdef int __new_vertex(self, double x, double y, double z) nogil
 
-  cdef int __new_edge(self, int first, int last) #nogil
+  cdef int __new_edge(self, int first, int last) nogil
 
-  cdef int __new_edge_from_edge(self, int he1, int last) #nogil
+  cdef int __new_edge_from_edge(self, int he1, int last) nogil
 
-  cdef int __new_face(self, int he1) #nogil
+  cdef int __new_face(self, int he1) nogil
 
-  cdef void __set_face_of_three_edges(self, int face, int he1, int he2, int he3) #nogil
+  cdef void __set_face_of_three_edges(self, int face, int he1, int he2, int he3) nogil
 
-  cdef void __set_gen_of_three_edges(self, int gen, int he1, int he2, int he3) #nogil
+  cdef void __set_gen_of_three_edges(self, int gen, int he1, int he2, int he3) nogil
 
-  cdef void __set_edge_of_face(self, int face, int he1) #nogil
+  cdef void __set_edge_of_face(self, int face, int he1) nogil
 
-  cdef void __set_mutual_twins(self, int he1, int he2) #nogil
+  cdef void __set_mutual_twins(self, int he1, int he2) nogil
 
-  cdef int __is_surface_edge(self, int t1) #nogil
+  cdef int __is_surface_edge(self, int t1) nogil
 
-  cdef int __next_surface(self, int he1, int direction) #nogil
+  cdef int __next_surface(self, int he1, int direction) nogil
 
-  cdef int __edge_duplicate_test(self, int he1, int a, int b) #nogil
+  cdef int __edge_duplicate_test(self, int he1, int a, int b) nogil
 
-  cdef int __flip_edge(self, int he1, double limit) #nogil
+  cdef int __flip_edge(self, int he1, double limit) nogil
 
-  cdef int __split_edge(self, int he1) #nogil
+  cdef int __split_edge(self, int he1) nogil
 
-  cdef int __set_next_of_triangle(self, int he1, int he2, int he3) #nogil
+  cdef int __set_next_of_triangle(self, int he1, int he2, int he3) nogil
 
-  cdef int __split_internal_edge(self, int he1) #nogil
+  cdef int __split_internal_edge(self, int he1) nogil
 
-  cdef int __split_surface_edge(self, int he1) #nogil
+  cdef int __split_surface_edge(self, int he1) nogil
 
-  cdef int __split_all_longest_triangle_edges(self, double limit) #nogil
+  cdef int __split_all_longest_triangle_edges(self, double limit) nogil
 
-  cdef double __get_edge_length(self, int he1) #nogil
+  cdef double __get_edge_length(self, int he1) nogil
 
-  cdef int __edge_integrity(self, int he1) #nogil
+  cdef int __edge_integrity(self, int he1) nogil
 
-  cdef int __triangle_integrity(self, int face) #nogil
+  cdef int __triangle_integrity(self, int face) nogil
 
-  cdef int __safe_vertex_positions(self, double limit) #nogil
+  cdef int __safe_vertex_positions(self, double limit) nogil
 
-  cdef double __get_edge_intensity(self, int he1) #nogil
+  cdef double __get_edge_intensity(self, int he1) nogil
 
-  cdef void __set_vertex_intensity(self, int v1, double i) #nogil
+  cdef void __set_vertex_intensity(self, int v1, double i) nogil
 
-  cdef void __set_edge_intensity(self, int he1, double i) #nogil
+  cdef void __set_edge_intensity(self, int he1, double i) nogil
 
   ## EXTERNAL
 
