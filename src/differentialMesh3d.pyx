@@ -88,25 +88,19 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
     cdef int v
     cdef int n
-    cdef double rad = self.source_rad
-    cdef int vnum = self.vnum
-
-    cdef int asize = self.source_zonemap.__get_greatest_zone_size()*27
-    cdef int *vertices
-
     cdef int num
-
     cdef int hits = 0
 
-    vertices = <int *>malloc(asize*sizeof(int))
+    cdef int asize = self.source_zonemap.__get_greatest_zone_size()*27
+    cdef int *vertices = <int *>malloc(asize*sizeof(int))
 
-    for v in xrange(vnum):
+    for v in xrange(self.vnum):
 
       num = self.source_zonemap.__sphere_vertices(
         self.X[v],
         self.Y[v],
         self.Z[v],
-        rad,
+        self.source_rad,
         vertices
       )
 
@@ -116,6 +110,8 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
         self.__set_vertex_intensity(v, 1.0)
 
         hits += 1
+
+    free(vertices)
 
     return hits
 
@@ -152,7 +148,6 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     """
 
     cdef double farl = self.farl
-    cdef int vnum = self.vnum
 
     cdef int v
     cdef int k
@@ -177,7 +172,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
     vertices = <int *>malloc(asize*sizeof(int))
 
-    for v in xrange(vnum):
+    for v in xrange(self.vnum):
 
       x = self.X[v]
       y = self.Y[v]
