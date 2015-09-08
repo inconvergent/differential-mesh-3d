@@ -192,5 +192,17 @@ if __name__ == '__main__' :
   import sys
 
   argv = sys.argv
-  main(argv[1:])
+  #main(argv[1:])
+
+  if False:
+
+    import pstats, cProfile
+    fn = './profile/profile'
+    cProfile.run('main(argv[1:])',fn)
+    p = pstats.Stats(fn)
+    p.strip_dirs().sort_stats('cumulative').print_stats()
+
+  else:
+
+    main(argv[1:])
 
