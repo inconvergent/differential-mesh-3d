@@ -81,10 +81,10 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
     return
 
-  @cython.wraparound(False)
-  @cython.boundscheck(False)
-  @cython.nonecheck(False)
-  cdef int __find_nearby_sources(self) nogil:
+  #@cython.wraparound(False)
+  #@cython.boundscheck(False)
+  #@cython.nonecheck(False)
+  cdef int __find_nearby_sources(self) :#nogil:
 
     cdef int v
     cdef int n
@@ -115,10 +115,10 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
     return hits
 
-  @cython.wraparound(False)
-  @cython.boundscheck(False)
-  @cython.nonecheck(False)
-  cdef int __smooth_intensity(self) nogil:
+  #@cython.wraparound(False)
+  #@cython.boundscheck(False)
+  #@cython.nonecheck(False)
+  cdef int __smooth_intensity(self) :#nogil:
 
     cdef int e
     cdef int v1
@@ -137,11 +137,11 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
     return 1
 
-  @cython.wraparound(False)
-  @cython.boundscheck(False)
-  @cython.nonecheck(False)
-  @cython.cdivision(True)
-  cdef int __reject(self, double scale) nogil:
+  #@cython.wraparound(False)
+  #@cython.boundscheck(False)
+  #@cython.nonecheck(False)
+  #@cython.cdivision(True)
+  cdef int __reject(self, double scale) :#nogil:
     """
     all vertices will move away from all neighboring (closer than farl)
     vertices
@@ -216,11 +216,11 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     return 1
 
 
-  @cython.wraparound(False)
-  @cython.boundscheck(False)
-  @cython.nonecheck(False)
-  @cython.cdivision(True)
-  cdef int __attract(self, double scale) nogil:
+  #@cython.wraparound(False)
+  #@cython.boundscheck(False)
+  #@cython.nonecheck(False)
+  #@cython.cdivision(True)
+  cdef int __attract(self, double scale) :#nogil:
     """
     vertices will move towards all connected vertices further away than
     nearl
@@ -300,11 +300,11 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
     return 1
 
-  @cython.wraparound(False)
-  @cython.boundscheck(False)
-  @cython.nonecheck(False)
-  @cython.cdivision(True)
-  cdef int __edge_vertex_force(self, int he1, int v1, double scale) nogil:
+  #@cython.wraparound(False)
+  #@cython.boundscheck(False)
+  #@cython.nonecheck(False)
+  #@cython.cdivision(True)
+  cdef int __edge_vertex_force(self, int he1, int v1, double scale) :#nogil:
 
     cdef int henum = self.henum
     cdef double nearl = self.nearl
@@ -339,10 +339,10 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
     return 1
 
-  @cython.wraparound(False)
-  @cython.boundscheck(False)
-  @cython.nonecheck(False)
-  cdef int __triangle_force(self, double scale) nogil:
+  #@cython.wraparound(False)
+  #@cython.boundscheck(False)
+  #@cython.nonecheck(False)
+  cdef int __triangle_force(self, double scale) :#nogil:
 
     cdef int ab
     cdef int bc
@@ -360,9 +360,9 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
     return 1
 
-  @cython.wraparound(False)
-  @cython.boundscheck(False)
-  @cython.nonecheck(False)
+  #@cython.wraparound(False)
+  #@cython.boundscheck(False)
+  #@cython.nonecheck(False)
   cpdef int optimize_position(self, double step, int itt, int scale_intensity):
 
     cdef int v
@@ -393,9 +393,9 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
     return 1
 
-  @cython.wraparound(False)
-  @cython.boundscheck(False)
-  @cython.nonecheck(False)
+  #@cython.wraparound(False)
+  #@cython.boundscheck(False)
+  #@cython.nonecheck(False)
   cpdef int position_noise(self, np.ndarray[double, mode="c",ndim=2] a, int scale_intensity):
 
     cdef int v
@@ -412,9 +412,9 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
     return 1
 
-  @cython.wraparound(False)
-  @cython.boundscheck(False)
-  @cython.nonecheck(False)
+  #@cython.wraparound(False)
+  #@cython.boundscheck(False)
+  #@cython.nonecheck(False)
   cpdef int initialize_sources(self, list sources, double source_rad):
 
     cdef int i
@@ -439,16 +439,16 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
     return 1
 
-  @cython.wraparound(False)
-  @cython.boundscheck(False)
-  @cython.nonecheck(False)
+  #@cython.wraparound(False)
+  #@cython.boundscheck(False)
+  #@cython.nonecheck(False)
   cpdef int find_nearby_sources(self):
 
     return self.__find_nearby_sources()
 
-  @cython.wraparound(False)
-  @cython.boundscheck(False)
-  @cython.nonecheck(False)
+  #@cython.wraparound(False)
+  #@cython.boundscheck(False)
+  #@cython.nonecheck(False)
   cpdef int smooth_intensity(self):
 
     return self.__smooth_intensity()

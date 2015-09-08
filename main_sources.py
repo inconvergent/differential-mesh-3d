@@ -142,7 +142,7 @@ def main(argv):
   data = load_obj(fn_obj)
   DM.initiate_faces(data['vertices'], data['faces'])
 
-  DM.optimize_edges(H, STP)
+  #DM.optimize_edges(H, STP)
 
   DM.set_edge_intensity(0,1.0)
 
@@ -158,20 +158,22 @@ def main(argv):
       t1 = time()
 
       kill = DM.find_nearby_sources()
+      if kill>0:
+        print('killed', kill)
 
-      DM.optimize_position(STP, OPT_ITT, scale_intensity=-1)
+      DM.optimize_position(STP, OPT_ITT, scale_intensity=1)
 
       vnum = DM.get_vnum()
 
       if i%10==0:
         noise = random_unit_vec(vnum, 4.3*STP)
-        DM.position_noise(noise, scale_intensity=-1)
+        DM.position_noise(noise, scale_intensity=1)
 
       DM.optimize_edges(H, STP)
 
       DM.smooth_intensity()
 
-      DM.diminish_all_vertex_intensity(0.999999)
+      DM.diminish_all_vertex_intensity(0.99999)
 
       if i%STAT_ITT==0:
         print_stats(i, time()-t1, DM)

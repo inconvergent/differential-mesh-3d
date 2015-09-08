@@ -37,29 +37,29 @@ cdef class Zonemap3d:
 
   ## FUNCTIONS
 
-  cdef void __init_zones(self) nogil
+  cdef void __init_zones(self) #nogil
 
-  cdef int __add_vertex(self, int v1) nogil
+  cdef int __add_vertex(self, int v1) #nogil
 
-  cdef int __del_vertex(self, int v1) nogil
+  cdef int __del_vertex(self, int v1) #nogil
 
-  cdef int __add_v_to_zone(self, int z1, int v1) nogil
+  cdef int __add_v_to_zone(self, int z1, int v1) #nogil
 
-  cdef int __extend_zv_of_zone(self, sZ *zone) nogil
+  cdef int __extend_zv_of_zone(self, sZ *zone) #nogil
 
-  cdef int __remove_v_from_zone(self, int zone, int v1) nogil
+  cdef int __remove_v_from_zone(self, int zone, int v1) #nogil
 
-  cdef int __get_z(self, double x, double y, double z) nogil
+  cdef int __get_z(self, double x, double y, double z) #nogil
 
-  cdef int __update_v(self, int v1) nogil
+  cdef int __update_v(self, int v1) #nogil
 
-  cdef int __sphere_vertices(self, double x, double y, double z, double rad, int *vertices) nogil
+  cdef int __sphere_vertices(self, double x, double y, double z, double rad, int *vertices) #nogil
 
-  cdef int __sphere_is_free(self, double x, double y, double z, double rad) nogil
+  cdef int __sphere_is_free(self, double x, double y, double z, double rad) #nogil
 
-  cdef int __get_greatest_zone_size(self) nogil
+  cdef int __get_greatest_zone_size(self) #nogil
 
-  cdef void __assign_xyz_arrays(self, double *x, double *y, double *z) nogil
+  cdef void __assign_xyz_arrays(self, double *x, double *y, double *z) #nogil
 
   ## INFO
 
