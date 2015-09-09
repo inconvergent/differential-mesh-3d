@@ -12,12 +12,12 @@ STP = 1.0e-4
 NEARL = 0.0048
 H = NEARL*0.8
 
-FARL = 0.03
+FARL = 0.02
 
 EXPORT_ITT = 100
 STAT_ITT = 10
 
-NUM_SOURCES = 50000
+NUM_SOURCES = 100000
 
 
 def random_unit_vec(num, scale):
@@ -149,7 +149,7 @@ def main(argv):
 
   rnd = 0.1 + 0.8*random(size=(NUM_SOURCES, 3))
   sources = [(x,y,z) for x,y,z in rnd]
-  DM.initialize_sources(sources, NEARL)
+  DM.initialize_sources(sources, NEARL*3)
 
   for i in xrange(ITT):
 

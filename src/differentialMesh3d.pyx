@@ -256,50 +256,93 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
         # internal edge. has two opposing half edges
         # half the force because it is applied twice
-        s = scale*0.5
+        s = scale*0.5/nrm
 
         if nrm>nearl and nrm>0.0:
 
           ## attract
-          self.DX[v1] += dx/nrm*s
-          self.DY[v1] += dy/nrm*s
-          self.DZ[v1] += dz/nrm*s
+          self.DX[v1] += dx*s
+          self.DY[v1] += dy*s
+          self.DZ[v1] += dz*s
 
         elif nrm<nearl*0.5 and nrm>0.0:
 
           ## reject
-          self.DX[v1] -= dx/nrm*s
-          self.DY[v1] -= dy/nrm*s
-          self.DZ[v1] -= dz/nrm*s
+          self.DX[v1] -= dx*s
+          self.DY[v1] -= dy*s
+          self.DZ[v1] -= dz*s
 
       else:
 
         # surface edge has one half edge, and they are all rotated the same way
         # half the force because we apply it twice.
-        s = scale*0.5
+        s = scale*0.5/nrm
 
         if nrm>nearl and nrm>0.0:
 
           ## attract
-          self.DX[v1] += dx/nrm*s
-          self.DY[v1] += dy/nrm*s
-          self.DZ[v1] += dz/nrm*s
+          self.DX[v1] += dx*s
+          self.DY[v1] += dy*s
+          self.DZ[v1] += dz*s
           # and the other vertex
-          self.DX[v2] -= dx/nrm*s
-          self.DY[v2] -= dy/nrm*s
-          self.DZ[v2] -= dz/nrm*s
+          self.DX[v2] -= dx*s
+          self.DY[v2] -= dy*s
+          self.DZ[v2] -= dz*s
 
         elif nrm<nearl*0.5 and nrm>0.0:
 
           ## reject
 
-          self.DX[v1] -= dx/nrm*s
-          self.DY[v1] -= dy/nrm*s
-          self.DZ[v1] -= dz/nrm*s
+          self.DX[v1] -= dx*s
+          self.DY[v1] -= dy*s
+          self.DZ[v1] -= dz*s
           # and the other vertex
-          self.DX[v2] += dx/nrm*s
-          self.DY[v2] += dy/nrm*s
-          self.DZ[v2] += dz/nrm*s
+          self.DX[v2] += dx*s
+          self.DY[v2] += dy*s
+          self.DZ[v2] += dz*s
+
+    return 1
+
+  @cython.wraparound(False)
+  @cython.boundscheck(False)
+  @cython.nonecheck(False)
+  @cython.cdivision(True)
+  cdef int __unfold(self, double scale) nogil:
+    """
+    """
+
+    cdef int v1
+    cdef int v2
+    cdef int k
+
+    cdef double dx
+    cdef double dy
+    cdef double dz
+    cdef double nrm
+
+    cdef double s
+
+    for k in xrange(self.henum):
+
+      if self.__is_surface_edge(k)<0:
+        continue
+
+      v1 = self.HE[self.HE[k].next].last
+      v2 = self.HE[self.HE[self.HE[k].twin].next].last
+
+      dx = self.X[v2]-self.X[v1]
+      dy = self.Y[v2]-self.Y[v1]
+      dz = self.Z[v2]-self.Z[v1]
+      nrm = sqrt(dx*dx+dy*dy+dz*dz)
+
+      s = scale/nrm
+
+      if nrm>0.0:
+
+        ## reject?
+        self.DX[v1] -= dx*s
+        self.DY[v1] -= dy*s
+        self.DZ[v1] -= dz*s
 
     return 1
 
@@ -375,6 +418,8 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     cdef double scale = 0.1
     cdef double intensity = 1.0
 
+    cdef double s = step
+
     for i in xrange(itt):
 
       double_array_init(self.DX, self.vnum, 0.)
@@ -383,16 +428,17 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
       self.__reject(reject_scale)
       self.__attract(scale)
+      self.__unfold(scale)
       #self.__triangle_force(scale)
 
       for v in range(self.vnum):
 
         if scale_intensity>0:
-          intensity = self.I[v]
+          s = step*self.I[v]
 
-        self.X[v] += self.DX[v]*step*intensity
-        self.Y[v] += self.DY[v]*step*intensity
-        self.Z[v] += self.DZ[v]*step*intensity
+        self.X[v] += self.DX[v]*s
+        self.Y[v] += self.DY[v]*s
+        self.Z[v] += self.DZ[v]*s
 
     return 1
 

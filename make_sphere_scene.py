@@ -44,16 +44,20 @@ class Obj(object):
 
   def spheres(self):
 
+    from numpy import array
     from numpy import row_stack
     from numpy import diff
+    from numpy import mean
     from numpy.linalg import norm
+    from collections import defaultdict
+
+    base_scale = 0.45
 
     scn = bpy.context.scene
     obj = self.obj
     world = obj.matrix_world
     mat = bpy.data.materials["Material"]
 
-    base_scale = 0.45
 
     bpy.ops.surface.primitive_nurbs_surface_sphere_add(
       radius = 1,
@@ -65,59 +69,52 @@ class Obj(object):
     bpy.context.active_object.hide_render = True
 
     mesh = sphere.data
-    num = len(obj.data.polygons)
 
-    for i,p in enumerate(obj.data.polygons):
+    vertex_map = defaultdict(list)
+    vertices = obj.data.vertices
+    edges = obj.data.edges
+    vnum = len(vertices)
+    enum = len(edges)
+    vert_co = row_stack([world*v.co for v in vertices])
 
-      loc = world*p.center
+    print('\ncalculating sizes:\n')
 
-      vco = [world*obj.data.vertices[v].co for v in p.vertices]
-      vco = diff(row_stack(vco + [vco[0]]),axis=0)
-      rad = norm(vco, axis=1).mean() * base_scale
+    for i,e in enumerate(edges):
+
+      vv = array([v for v in e.vertices],'int')
+      dx = diff(vert_co[vv,:],axis=0).squeeze()
+      #dx = diff(row_stack([ \for v in vv]),axis=0).squeeze()
+      dd = norm(dx)
+
+      vertex_map[vv[0]].append(dd)
+      vertex_map[vv[1]].append(dd)
+
+      if i%100==0:
+        print(i, enum)
+
+    vertex_weight = {k:mean(d) for k,d in vertex_map.items()}
+
+    print('\nplacing objects:\n')
+
+    for i,(v,rad) in enumerate(vertex_weight.items()):
 
       o = bpy.data.objects.new('one', mesh)
-      o.location = loc
+      #o.location = world*vertices[v].co
+      o.location = vert_co[v,:]
+
+      scale = rad*base_scale
 
       sx,sy,sz = o.scale
-      sx *= rad
-      sy *= rad
-      sz *= rad
+      sx *= scale
+      sy *= scale
+      sz *= scale
 
       o.scale = ((sx,sy,sz))
       scn.objects.link(o)
 
       if i%100==0:
-        print(i, num)
+        print(i, vnum)
 
-  #def __set_vis(self, frame, vis=True):
-
-    #bpy.context.scene.objects.active = self.obj
-
-    #bpy.data.scenes['Scene'].frame_current = frame
-    #bpy.context.active_object.hide = not vis
-    #bpy.context.active_object.hide_render = not vis
-
-    #bpy.context.active_object.keyframe_insert(
-      #data_path="hide",
-      #index=-1,
-      #frame=frame
-    #)
-    #bpy.context.active_object.keyframe_insert(
-      #data_path="hide_render",
-      #index=-1,
-      #frame=frame
-    #)
-
-  #def animate_vis(self, ain, aout):
-
-    #self.__set_vis(0, False)
-    #self.__set_vis(ain, True)
-    #self.__set_vis(aout, False)
-
-  #def apply_mat(self):
-
-    #mat = bpy.data.materials["Material"]
-    #self.obj.data.materials.append(mat)
 
 
 def main(argv):
