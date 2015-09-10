@@ -91,7 +91,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     cdef int num
     cdef int hits = 0
 
-    cdef int asize = self.source_zonemap.__get_greatest_zone_size()*27
+    cdef int asize = self.source_zonemap.__get_max_sphere_count()
     cdef int *vertices = <int *>malloc(asize*sizeof(int))
 
     for v in xrange(self.vnum):
@@ -166,7 +166,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     cdef double resy = 0.
     cdef double resz = 0.
 
-    cdef int asize = self.zonemap.__get_greatest_zone_size()*27
+    cdef int asize = self.zonemap.__get_max_sphere_count()
     cdef int *vertices
     cdef int neighbor_num
 
