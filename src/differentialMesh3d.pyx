@@ -21,6 +21,7 @@ from helpers cimport vcross
 import numpy as np
 cimport numpy as np
 
+cdef int procs = 4
 
 cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
@@ -170,49 +171,42 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     cdef int *vertices
     cdef int neighbor_num
 
-    with nogil, parallel(num_threads=4):
+    with nogil, parallel(num_threads=procs):
 
       vertices = <int *>malloc(asize*sizeof(int))
-
       for v in prange(self.vnum, schedule='guided'):
-      #for v in xrange(self.vnum):
 
-          x = self.X[v]
-          y = self.Y[v]
-          z = self.Z[v]
+        x = self.X[v]
+        y = self.Y[v]
+        z = self.Z[v]
+        neighbor_num = self.zonemap.__sphere_vertices(x, y, z, farl, vertices)
 
-          neighbor_num = self.zonemap.__sphere_vertices(x, y, z, farl, vertices)
+        resx = 0.
+        resy = 0.
+        resz = 0.
+        for k in range(neighbor_num):
 
-          resx = 0.
-          resy = 0.
-          resz = 0.
+          neigh = vertices[k]
 
-          for k in range(neighbor_num):
+          if neigh == v:
+            continue
 
-            neigh = vertices[k]
+          dx = x-self.X[neigh]
+          dy = y-self.Y[neigh]
+          dz = z-self.Z[neigh]
+          nrm = sqrt(dx*dx+dy*dy+dz*dz)
 
-            if neigh == v:
+          if nrm>farl or nrm<=0.0:
+            continue
 
-              continue
+          force = (farl-nrm)/nrm
+          resx += dx*force
+          resy += dy*force
+          resz += dz*force
 
-            dx = x-self.X[neigh]
-            dy = y-self.Y[neigh]
-            dz = z-self.Z[neigh]
-            nrm = sqrt(dx*dx+dy*dy+dz*dz)
-
-            if nrm>farl or nrm<=0.0:
-
-              continue
-
-            force = (farl-nrm)/nrm
-
-            resx += dx*force
-            resy += dy*force
-            resz += dz*force
-
-          self.DX[v] += resx
-          self.DY[v] += resy
-          self.DZ[v] += resz
+        self.DX[v] += resx
+        self.DY[v] += resy
+        self.DZ[v] += resz
 
       free(vertices)
 
