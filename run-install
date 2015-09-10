@@ -4,8 +4,6 @@ set -e
 source settings
 here=$(pwd)
 
-pyx=$()
-
 rm -f src/*.html src/*.c
 rm -f *.so
 rm -f *.pyc

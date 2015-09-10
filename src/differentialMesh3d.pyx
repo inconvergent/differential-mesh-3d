@@ -13,6 +13,7 @@ from cython.parallel import parallel, prange
 from libc.math cimport sqrt
 from libc.math cimport cos
 from libc.math cimport sin
+from libc.math cimport fabs
 
 from helpers cimport double_array_init
 from helpers cimport int_array_init
@@ -307,12 +308,35 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
     cdef int v1
     cdef int v2
+    cdef int first
+    cdef int last
     cdef int k
 
     cdef double dx
     cdef double dy
     cdef double dz
+    cdef double midx
+    cdef double midy
+    cdef double midz
+    cdef double v1x
+    cdef double v1y
+    cdef double v1z
+    cdef double v2x
+    cdef double v2y
+    cdef double v2z
+
+    cdef double dv1x
+    cdef double dv1y
+    cdef double dv1z
+    cdef double dv2x
+    cdef double dv2y
+    cdef double dv2z
+
+    cdef double dnrmv1
+    cdef double dnrmv2
+
     cdef double nrm
+    cdef double invdot
 
     cdef double s
 
@@ -321,22 +345,56 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
       if self.__is_surface_edge(k)<0:
         continue
 
+      first = self.HE[k].first
+      last = self.HE[k].last
+
+      midx = (self.X[first] + self.X[last])*0.5
+      midy = (self.Y[first] + self.Y[last])*0.5
+      midz = (self.Z[first] + self.Z[last])*0.5
+
       v1 = self.HE[self.HE[k].next].last
       v2 = self.HE[self.HE[self.HE[k].twin].next].last
 
-      dx = self.X[v2]-self.X[v1]
-      dy = self.Y[v2]-self.Y[v1]
-      dz = self.Z[v2]-self.Z[v1]
+      v1x = self.X[v1]
+      v1y = self.Y[v1]
+      v1z = self.Z[v1]
+      v2x = self.X[v2]
+      v2y = self.Y[v2]
+      v2z = self.Z[v2]
+
+      dv1x = v1x - midx
+      dv1y = v1y - midy
+      dv1z = v1z - midz
+      dv2x = v2x - midx
+      dv2y = v2y - midy
+      dv2z = v2z - midz
+
+      dx = v2x-v1x
+      dy = v2y-v1y
+      dz = v2z-v1z
       nrm = sqrt(dx*dx+dy*dy+dz*dz)
 
-      s = scale/nrm
+      if nrm<=0:
+        continue
 
-      if nrm>0.0:
+      dnrmv1 = sqrt(dv1x*dv1x+dv1y*dv1y+dv1z*dv1z)
+      dnrmv2 = sqrt(dv2x*dv2x+dv2y*dv2y+dv2z*dv2z)
 
-        ## reject?
-        self.DX[v1] -= dx*s
-        self.DY[v1] -= dy*s
-        self.DZ[v1] -= dz*s
+      if dnrmv1<=0.0 or dnrmv2<=0.0:
+        continue
+
+      invdot = 1.0 - fabs(
+        dv1x/dnrmv1*dv2x/dnrmv2+
+        dv1y/dnrmv1*dv2y/dnrmv2+
+        dv1z/dnrmv1*dv2z/dnrmv2
+      )
+
+      s = scale/nrm*invdot
+
+      ## reject
+      self.DX[v1] -= dx*s
+      self.DY[v1] -= dy*s
+      self.DZ[v1] -= dz*s
 
     return 1
 
