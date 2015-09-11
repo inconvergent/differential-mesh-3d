@@ -208,6 +208,16 @@ cdef class Mesh3d:
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
+  cdef void __add_edge_intensity(self, int he1, double i) nogil:
+
+    self.I[self.HE[he1].first] += i*0.5
+    self.I[self.HE[he1].last] += i*0.5
+
+    return
+
+  @cython.wraparound(False)
+  @cython.boundscheck(False)
+  @cython.nonecheck(False)
   cdef int __new_vertex(self, double x, double y, double z) nogil:
     """
     adds a vertex x,y. returns id of new vertex
@@ -1098,6 +1108,15 @@ cdef class Mesh3d:
   cpdef int set_edge_intensity(self, int he1, double i):
 
     self.__set_edge_intensity(he1, i)
+
+    return 1
+
+  @cython.wraparound(False)
+  @cython.boundscheck(False)
+  @cython.nonecheck(False)
+  cpdef int add_edge_intensity(self, int he1, double i):
+
+    self.__add_edge_intensity(he1, i)
 
     return 1
 

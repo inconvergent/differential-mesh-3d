@@ -102,6 +102,8 @@ cdef class Mesh3d:
 
   cdef void __set_edge_intensity(self, int he1, double i) nogil
 
+  cdef void __add_edge_intensity(self, int he1, double i) nogil
+
   ## EXTERNAL
 
   cpdef int edge_integrity(self, int he1)
@@ -133,6 +135,9 @@ cdef class Mesh3d:
   cpdef int set_vertex_intensity(self, int v1, double i)
 
   cpdef int set_edge_intensity(self, int he1, double i)
+
+  cpdef int add_edge_intensity(self, int he1, double i)
+
 
   cpdef double get_triangle_intensity(self, int f1)
 
