@@ -51,7 +51,7 @@ class Obj(object):
     from numpy.linalg import norm
     from collections import defaultdict
 
-    base_scale = 0.45
+    base_scale = 0.65
 
     scn = bpy.context.scene
     obj = self.obj
