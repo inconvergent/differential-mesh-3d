@@ -57,6 +57,8 @@ cdef class Zonemap3d:
 
   cdef int __sphere_is_free(self, double x, double y, double z, double rad) nogil
 
+  cdef int __sphere_is_free_ignore(self, double x, double y, double z, int v, double rad) nogil
+
   cdef int __get_max_sphere_count(self) nogil
 
   cdef void __assign_xyz_arrays(self, double *x, double *y, double *z) nogil

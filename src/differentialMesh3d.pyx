@@ -465,12 +465,16 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
     cdef int v
     cdef int i
+    cdef int free
 
     cdef double reject_scale = 1.0
     cdef double scale = 0.1
     cdef double intensity = 1.0
 
     cdef double s = step
+    cdef double x
+    cdef double y
+    cdef double z
 
     for i in xrange(itt):
 
@@ -481,16 +485,23 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
       self.__reject(reject_scale)
       self.__attract(scale)
       self.__unfold(scale)
-      #self.__triangle_force(scale)
 
-      for v in range(self.vnum):
+      for v in xrange(self.vnum):
 
         if scale_intensity>0:
           s = step*self.I[v]
 
-        self.X[v] += self.DX[v]*s
-        self.Y[v] += self.DY[v]*s
-        self.Z[v] += self.DZ[v]*s
+        x = self.X[v] + s*self.DX[v]
+        y = self.Y[v] + s*self.DY[v]
+        z = self.Z[v] + s*self.DZ[v]
+        free = self.zonemap.__sphere_is_free_ignore(x, y, z, v, self.nearl*0.3)
+        if free<0:
+          print('block', v)
+          continue
+
+        self.X[v] = x
+        self.Y[v] = y
+        self.Z[v] = z
 
     return 1
 
