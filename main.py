@@ -8,7 +8,7 @@ NMAX = int(10e7)
 ITT = int(10e7)
 OPT_ITT = 1
 
-STP = 1.0e-4
+STP = 5.0e-5
 NEARL = 0.0028
 H = NEARL*0.8
 

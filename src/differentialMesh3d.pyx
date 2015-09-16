@@ -150,6 +150,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     """
 
     cdef double farl = self.farl
+    cdef double nearl = self.nearl
 
     cdef int v
     cdef int k
@@ -162,7 +163,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     cdef double dy
     cdef double dz
     cdef double nrm
-    cdef double force
+    cdef double s
 
     cdef double resx = 0.
     cdef double resy = 0.
@@ -188,7 +189,6 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
         for k in range(neighbor_num):
 
           neigh = vertices[k]
-
           if neigh == v:
             continue
 
@@ -200,10 +200,18 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
           if nrm>farl or nrm<=0.0:
             continue
 
-          force = (farl-nrm)/nrm
-          resx += dx*force
-          resy += dy*force
-          resz += dz*force
+          dx = dx/nrm
+          dy = dy/nrm
+          dz = dz/nrm
+
+          s = farl-nrm
+
+          #if nrm<nearl:
+            #s *= 2.0
+
+          resx += dx*s
+          resy += dy*s
+          resz += dz*s
 
         self.DX[v] += resx
         self.DY[v] += resy
@@ -247,20 +255,23 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
       dz = self.Z[v2]-self.Z[v1]
       nrm = sqrt(dx*dx+dy*dy+dz*dz)
 
+      if nrm<0.:
+        continue
+
       if self.HE[k].twin>-1:
 
         # internal edge. has two opposing half edges
         # half the force because it is applied twice
         s = scale*0.5/nrm
 
-        if nrm>nearl and nrm>0.0:
+        if nrm>nearl:
 
           ## attract
           self.DX[v1] += dx*s
           self.DY[v1] += dy*s
           self.DZ[v1] += dz*s
 
-        elif nrm<nearl*0.5 and nrm>0.0:
+        elif nrm<=nearl:
 
           ## reject
           self.DX[v1] -= dx*s
@@ -270,10 +281,9 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
       else:
 
         # surface edge has one half edge, and they are all rotated the same way
-        # half the force because we apply it twice.
-        s = scale*0.5/nrm
+        s = scale/nrm
 
-        if nrm>nearl and nrm>0.0:
+        if nrm>nearl:
 
           ## attract
           self.DX[v1] += dx*s
@@ -284,10 +294,9 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
           self.DY[v2] -= dy*s
           self.DZ[v2] -= dz*s
 
-        elif nrm<nearl*0.5 and nrm>0.0:
+        elif nrm<=nearl:
 
           ## reject
-
           self.DX[v1] -= dx*s
           self.DY[v1] -= dy*s
           self.DZ[v1] -= dz*s
