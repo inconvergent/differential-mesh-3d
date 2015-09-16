@@ -206,8 +206,8 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
           s = farl-nrm
 
-          #if nrm<nearl:
-            #s *= 2.0
+          if nrm<nearl:
+            s *= 2.0
 
           resx += dx*s
           resy += dy*s
@@ -485,6 +485,8 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     cdef double y
     cdef double z
 
+    cdef int blocked = 0
+
     for i in xrange(itt):
 
       double_array_init(self.DX, self.vnum, 0.)
@@ -493,26 +495,30 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
       self.__reject(reject_scale)
       self.__attract(scale)
-      self.__unfold(scale)
+      self.__unfold(0.2)
 
-      for v in xrange(self.vnum):
+      with nogil, parallel(num_threads=procs):
 
-        if scale_intensity>0:
-          s = step*self.I[v]
+        for v in prange(self.vnum, schedule='guided'):
+        # for v in xrange(self.vnum):
 
-        x = self.X[v] + s*self.DX[v]
-        y = self.Y[v] + s*self.DY[v]
-        z = self.Z[v] + s*self.DZ[v]
-        free = self.zonemap.__sphere_is_free_ignore(x, y, z, v, self.nearl*0.3)
-        if free<0:
-          print('block', v)
-          continue
+          if scale_intensity>0:
+            s = step*self.I[v]
 
-        self.X[v] = x
-        self.Y[v] = y
-        self.Z[v] = z
+          x = self.X[v] + s*self.DX[v]
+          y = self.Y[v] + s*self.DY[v]
+          z = self.Z[v] + s*self.DZ[v]
+          # free = self.zonemap.__sphere_is_free_ignore(x, y, z, v, self.nearl*0.3)
+          # if free<0:
+            # blocked += 1
+            # # print('block', v)
+            # continue
 
-    return 1
+          self.X[v] = x
+          self.Y[v] = y
+          self.Z[v] = z
+
+    return blocked
 
   @cython.wraparound(False)
   @cython.boundscheck(False)

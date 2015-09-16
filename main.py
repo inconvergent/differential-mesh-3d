@@ -8,14 +8,14 @@ NMAX = int(10e7)
 ITT = int(10e7)
 OPT_ITT = 1
 
-STP = 5.0e-5
+STP = 1.0e-5
 NEARL = 0.0028
-H = NEARL*0.8
+H = NEARL*1.2
 
-FARL = 0.01
+FARL = 0.03
 
 EXPORT_ITT = 100
-STAT_ITT = 2
+STAT_ITT = 1
 
 
 def random_unit_vec(num, scale):
@@ -140,6 +140,10 @@ def main(argv):
 
   data = load_obj(fn_obj)
   DM.initiate_faces(data['vertices'], data['faces'])
+
+  noise = random_unit_vec(DM.get_vnum(), STP*4)
+  DM.position_noise(noise, scale_intensity=-1)
+
   DM.optimize_edges(H, STP)
 
   for he in xrange(DM.get_henum()):
@@ -151,17 +155,15 @@ def main(argv):
 
       t1 = time()
 
-      DM.optimize_position(STP, OPT_ITT, scale_intensity=1)
+      blocked = DM.optimize_position(STP, OPT_ITT, scale_intensity=1)
+      # print('blocked: {:d}'.format(blocked))
 
-      vnum = DM.get_vnum()
+      # vnum = DM.get_vnum()
 
       DM.optimize_edges(H, STP)
-      if i%800==0:
+      if i%50==0:
         for he in unique((random(DM.get_henum())<0.01).nonzero()[0]):
           DM.add_edge_intensity(he, 1.0)
-
-        noise = random_unit_vec(vnum, STP)
-        DM.position_noise(noise, scale_intensity=1)
 
       DM.diminish_all_vertex_intensity(0.99)
       DM.smooth_intensity()
