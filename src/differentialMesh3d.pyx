@@ -143,7 +143,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.boundscheck(False)
   @cython.nonecheck(False)
   @cython.cdivision(True)
-  cdef int __reject(self, double scale) nogil:
+  cdef int __reject(self, double stp) nogil:
     """
     all vertices will move away from all neighboring (closer than farl)
     vertices
@@ -186,6 +186,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
         resx = 0.
         resy = 0.
         resz = 0.
+
         for k in range(neighbor_num):
 
           neigh = vertices[k]
@@ -213,9 +214,9 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
           resy += dy*s
           resz += dz*s
 
-        self.DX[v] += resx
-        self.DY[v] += resy
-        self.DZ[v] += resz
+        self.DX[v] += resx*stp
+        self.DY[v] += resy*stp
+        self.DZ[v] += resz*stp
 
       free(vertices)
 
@@ -226,7 +227,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.boundscheck(False)
   @cython.nonecheck(False)
   @cython.cdivision(True)
-  cdef int __attract(self, double scale) nogil:
+  cdef int __attract(self, double stp) nogil:
     """
     vertices will move towards all connected vertices further away than
     nearl
@@ -262,7 +263,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
         # internal edge. has two opposing half edges
         # half the force because it is applied twice
-        s = scale*0.5/nrm
+        s = stp*0.5/nrm
 
         if nrm>nearl:
 
@@ -281,7 +282,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
       else:
 
         # surface edge has one half edge, and they are all rotated the same way
-        s = scale/nrm
+        s = stp/nrm
 
         if nrm>nearl:
 
@@ -311,7 +312,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.boundscheck(False)
   @cython.nonecheck(False)
   @cython.cdivision(True)
-  cdef int __unfold(self, double scale) nogil:
+  cdef int __unfold(self, double stp) nogil:
     """
     """
 
@@ -398,7 +399,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
         dv1z/dnrmv1*dv2z/dnrmv2
       )
 
-      s = scale/nrm*invdot
+      s = stp/nrm*invdot
 
       ## reject
       self.DX[v1] -= dx*s
@@ -411,7 +412,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.boundscheck(False)
   @cython.nonecheck(False)
   @cython.cdivision(True)
-  cdef int __edge_vertex_force(self, int he1, int v1, double scale) nogil:
+  cdef int __edge_vertex_force(self, int he1, int v1, double stp) nogil:
 
     cdef int henum = self.henum
     cdef double nearl = self.nearl
@@ -436,20 +437,22 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     if nrm>0.5*sqrt(3.0)*nearl:
 
       #pass
-      self.DX[v1] += -dx/nrm*scale
-      self.DY[v1] += -dy/nrm*scale
+      self.DX[v1] += -dx/nrm*stp
+      self.DY[v1] += -dy/nrm*stp
+      self.DZ[v1] += -dz/nrm*stp
 
     else:
 
-      self.DX[v1] += dx/nrm*scale
-      self.DY[v1] += dy/nrm*scale
+      self.DX[v1] += dx/nrm*stp
+      self.DY[v1] += dy/nrm*stp
+      self.DZ[v1] += dz/nrm*stp
 
     return 1
 
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cdef int __triangle_force(self, double scale) nogil:
+  cdef int __triangle_force(self, double stp) nogil:
 
     cdef int ab
     cdef int bc
@@ -461,26 +464,32 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
       bc = self.HE[ab].next
       ca = self.HE[bc].next
 
-      self.__edge_vertex_force(ab,self.HE[ca].first,scale)
-      self.__edge_vertex_force(bc,self.HE[ab].first,scale)
-      self.__edge_vertex_force(ca,self.HE[ab].last,scale)
+      self.__edge_vertex_force(ab,self.HE[ca].first,stp)
+      self.__edge_vertex_force(bc,self.HE[ab].first,stp)
+      self.__edge_vertex_force(ca,self.HE[ab].last,stp)
 
     return 1
 
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cpdef int optimize_position(self, double step, int itt, int scale_intensity):
+  cpdef int optimize_position(
+    self,
+    double reject_stp,
+    double triangle_stp,
+    double attract_stp,
+    double unfold_stp,
+    double cohesion_stp,
+    int itt,
+    int scale_intensity
+  ):
 
     cdef int v
     cdef int i
     cdef int free
 
-    cdef double reject_scale = 1.0
-    cdef double scale = 0.1
     cdef double intensity = 1.0
 
-    cdef double s = step
     cdef double x
     cdef double y
     cdef double z
@@ -493,26 +502,30 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
       double_array_init(self.DY, self.vnum, 0.)
       double_array_init(self.DZ, self.vnum, 0.)
 
-      self.__reject(reject_scale)
-      self.__attract(scale)
-      self.__unfold(0.2)
+      if reject_stp>0.0:
+        self.__reject(reject_stp)
+
+      if triangle_stp>0.0:
+        self.__triangle_force(triangle_stp)
+
+      if attract_stp>0.0:
+        self.__attract(attract_stp)
+
+      if unfold_stp>0.0:
+        self.__unfold(unfold_stp)
 
       with nogil, parallel(num_threads=procs):
 
         for v in prange(self.vnum, schedule='guided'):
-        # for v in xrange(self.vnum):
 
           if scale_intensity>0:
-            s = step*self.I[v]
-
-          x = self.X[v] + s*self.DX[v]
-          y = self.Y[v] + s*self.DY[v]
-          z = self.Z[v] + s*self.DZ[v]
-          # free = self.zonemap.__sphere_is_free_ignore(x, y, z, v, self.nearl*0.3)
-          # if free<0:
-            # blocked += 1
-            # # print('block', v)
-            # continue
+            x = self.X[v] + self.I[v]*self.DX[v]
+            y = self.Y[v] + self.I[v]*self.DY[v]
+            z = self.Z[v] + self.I[v]*self.DZ[v]
+          else:
+            x = self.X[v] + self.DX[v]
+            y = self.Y[v] + self.DY[v]
+            z = self.Z[v] + self.DZ[v]
 
           self.X[v] = x
           self.Y[v] = y

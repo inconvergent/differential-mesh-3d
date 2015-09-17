@@ -14,8 +14,18 @@ H = NEARL*1.2
 
 FARL = 0.03
 
+FLIP_LIMIT = NEARL*0.5
+
 EXPORT_ITT = 100
 STAT_ITT = 1
+
+
+REJECT_STP = STP*1.0
+TRIANGLE_STP = STP*0.1
+ATTRACT_STP = STP*0.1
+UNFOLD_STP = STP*0.1
+COHESION_STP = STP*0.
+
 
 
 def random_unit_vec(num, scale):
@@ -141,10 +151,10 @@ def main(argv):
   data = load_obj(fn_obj)
   DM.initiate_faces(data['vertices'], data['faces'])
 
-  noise = random_unit_vec(DM.get_vnum(), STP*4)
+  noise = random_unit_vec(DM.get_vnum(), 1.0e-4)
   DM.position_noise(noise, scale_intensity=-1)
 
-  DM.optimize_edges(H, STP)
+  DM.optimize_edges(H, FLIP_LIMIT)
 
   for he in xrange(DM.get_henum()):
     DM.set_edge_intensity(he, 1.0)
@@ -155,12 +165,19 @@ def main(argv):
 
       t1 = time()
 
-      blocked = DM.optimize_position(STP, OPT_ITT, scale_intensity=1)
-      # print('blocked: {:d}'.format(blocked))
+      #DM.optimize_position(STP, OPT_ITT, scale_intensity=1)
+      DM.optimize_position(
+        REJECT_STP,
+        TRIANGLE_STP,
+        ATTRACT_STP,
+        UNFOLD_STP,
+        COHESION_STP,
+        OPT_ITT,
+        scale_intensity=1
+      )
 
-      # vnum = DM.get_vnum()
+      DM.optimize_edges(H, FLIP_LIMIT)
 
-      DM.optimize_edges(H, STP)
       if i%50==0:
         for he in unique((random(DM.get_henum())<0.01).nonzero()[0]):
           DM.add_edge_intensity(he, 1.0)
