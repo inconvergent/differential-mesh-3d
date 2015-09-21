@@ -48,7 +48,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
   cdef int __find_nearby_sources(self) nogil
 
-  cdef int __smooth_intensity(self) nogil
+  cdef int __smooth_intensity(self, double alpha) nogil
 
   ## EXTERNAL
 
@@ -56,7 +56,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
   cpdef int find_nearby_sources(self)
 
-  cpdef int smooth_intensity(self)
+  cpdef int smooth_intensity(self, double alpha)
 
   cpdef int position_noise(
     self,

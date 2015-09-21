@@ -178,12 +178,11 @@ def main(argv):
 
       DM.optimize_edges(H, FLIP_LIMIT)
 
-      if i%50==0:
-        for he in unique((random(DM.get_henum())<0.01).nonzero()[0]):
-          DM.add_edge_intensity(he, 1.0)
+      for he in unique((random(DM.get_henum())<0.0001).nonzero()[0]):
+        DM.add_edge_intensity(he, 1.0)
 
-      DM.diminish_all_vertex_intensity(0.99)
-      DM.smooth_intensity()
+      DM.diminish_all_vertex_intensity(0.95)
+      DM.smooth_intensity(0.01)
 
       if i%STAT_ITT==0:
         print_stats(i, time()-t1, DM)

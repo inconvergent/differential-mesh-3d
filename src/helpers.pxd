@@ -9,19 +9,19 @@ cdef extern from "stdlib.h":
   void qsort(void *base, int nmemb, int size,
        int(*compar)(const void *, const void *)) nogil
 
-cdef inline void int_array_init(int *a, int n, int v):
+cdef inline void int_array_init(int *a, int n, int v) nogil:
   cdef int i
   for i in xrange(n):
     a[i] = v
   return
 
-cdef inline void float_array_init(float *a, int n, float v):
+cdef inline void float_array_init(float *a, int n, float v) nogil:
   cdef int i
   for i in xrange(n):
     a[i] = v
   return
 
-cdef inline void double_array_init(double *a, int n, double v):
+cdef inline void double_array_init(double *a, int n, double v) nogil:
   cdef int i
   for i in xrange(n):
     a[i] = v

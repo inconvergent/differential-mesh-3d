@@ -17,6 +17,7 @@ from libc.math cimport fabs
 
 from helpers cimport double_array_init
 from helpers cimport int_array_init
+from helpers cimport int_array_init
 from helpers cimport vcross
 
 import numpy as np
@@ -120,22 +121,42 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cdef int __smooth_intensity(self) nogil:
+  cdef int __smooth_intensity(self, double alpha) nogil:
 
+    cdef int vnum = self.vnum
     cdef int e
+    cdef int v
     cdef int v1
     cdef int v2
-    cdef double newi
+    cdef double a
+    cdef double b
+
+    newintensity = <double *>malloc(vnum*sizeof(double))
+    double_array_init(newintensity, vnum, 0.)
+
+    count = <int *>malloc(vnum*sizeof(int))
+    int_array_init(count, vnum, 0)
 
     for e in xrange(self.henum):
 
       v1 = self.HE[e].first
       v2 = self.HE[e].last
 
-      newi = (self.I[v1] + self.I[v2]) * 0.5
+      a = self.I[v1]
+      b = self.I[v2]
 
-      self.I[v1] = newi
-      self.I[v2] = newi
+      newintensity[v1] += ((b-a)*alpha + a*(1.0-alpha))/(1.0-alpha)
+      newintensity[v2] += ((a-b)*alpha + b*(1.0-alpha))/(1.0-alpha)
+
+      count[v1] += 1
+      count[v2] += 1
+
+    for v in xrange(vnum):
+
+      self.I[v] = newintensity[v]/<double>(count[v])
+
+    free(newintensity)
+    free(count)
 
     return 1
 
@@ -613,7 +634,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cpdef int smooth_intensity(self):
+  cpdef int smooth_intensity(self, double alpha):
 
-    return self.__smooth_intensity()
+    return self.__smooth_intensity(alpha)
 
