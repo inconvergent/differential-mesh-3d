@@ -6,18 +6,28 @@ from __future__ import print_function
 
 NMAX = int(10e7)
 ITT = int(10e7)
-OPT_ITT = 3
+OPT_ITT = 1
 
-STP = 1.0e-4
-NEARL = 0.0048
-H = NEARL*0.8
+NEARL = 0.0028
+H = NEARL*1.2
 
-FARL = 0.02
+FARL = 0.03
+
+FLIP_LIMIT = NEARL*0.5
 
 EXPORT_ITT = 100
-STAT_ITT = 10
+STAT_ITT = 1
 
-NUM_SOURCES = 100000
+
+NUM_SOURCES = 50000
+
+STP = 1.0e-5
+
+REJECT_STP = STP*1.0
+TRIANGLE_STP = STP*0.1
+ATTRACT_STP = STP*0.5
+UNFOLD_STP = STP*0.1
+COHESION_STP = STP*0.
 
 
 def random_unit_vec(num, scale):
@@ -142,9 +152,13 @@ def main(argv):
   data = load_obj(fn_obj)
   DM.initiate_faces(data['vertices'], data['faces'])
 
-  #DM.optimize_edges(H, STP)
+  DM.optimize_edges(H, FLIP_LIMIT)
 
-  DM.set_edge_intensity(0,1.0)
+  noise = random_unit_vec(DM.get_vnum(), 1.0e-4)
+  DM.position_noise(noise, scale_intensity=-1)
+
+  for he in xrange(DM.get_henum()):
+    DM.set_edge_intensity(he, 1.0)
 
 
   rnd = 0.1 + 0.8*random(size=(NUM_SOURCES, 3))
@@ -161,19 +175,20 @@ def main(argv):
       if kill>0:
         print('killed', kill)
 
-      DM.optimize_position(STP, OPT_ITT, scale_intensity=1)
+      DM.optimize_position(
+        REJECT_STP,
+        TRIANGLE_STP,
+        ATTRACT_STP,
+        UNFOLD_STP,
+        COHESION_STP,
+        OPT_ITT,
+        scale_intensity=1
+      )
 
-      vnum = DM.get_vnum()
+      DM.optimize_edges(H, FLIP_LIMIT)
 
-      if i%10==0:
-        noise = random_unit_vec(vnum, 4.3*STP)
-        DM.position_noise(noise, scale_intensity=1)
-
-      DM.optimize_edges(H, STP)
-
-      DM.smooth_intensity()
-
-      DM.diminish_all_vertex_intensity(0.99999)
+      DM.diminish_all_vertex_intensity(0.9998)
+      DM.smooth_intensity(0.01)
 
       if i%STAT_ITT==0:
         print_stats(i, time()-t1, DM)
