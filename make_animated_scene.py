@@ -47,8 +47,8 @@ class Obj(object):
     #bpy.context.scene.objects.selected = self.obj
 
     bpy.ops.object.modifier_add(type='SUBSURF')
-    self.obj.modifiers['Subsurf'].levels = levels
-    self.obj.modifiers['Subsurf'].render_levels = levels
+    self.obj.modifiers['Subsurf'].levels = 1
+    self.obj.modifiers['Subsurf'].render_levels = 2
 
     bpy.ops.object.shade_smooth()
 

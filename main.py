@@ -16,14 +16,14 @@ FARL = 0.03
 
 FLIP_LIMIT = NEARL*0.5
 
-EXPORT_ITT = 100
+EXPORT_ITT = 10
 STAT_ITT = 1
 
 
 REJECT_STP = STP*1.0
-TRIANGLE_STP = STP*0.1
-ATTRACT_STP = STP*0.1
-UNFOLD_STP = STP*0.1
+TRIANGLE_STP = STP*0.3
+ATTRACT_STP = STP*0.3
+UNFOLD_STP = STP*0.3
 COHESION_STP = STP*0.
 
 
@@ -178,11 +178,11 @@ def main(argv):
 
       DM.optimize_edges(H, FLIP_LIMIT)
 
-      for he in unique((random(DM.get_henum())<0.0001).nonzero()[0]):
+      for he in unique((random(DM.get_henum())<0.004).nonzero()[0]):
         DM.add_edge_intensity(he, 1.0)
 
       DM.diminish_all_vertex_intensity(0.95)
-      DM.smooth_intensity(0.01)
+      DM.smooth_intensity(0.05)
 
       if i%STAT_ITT==0:
         print_stats(i, time()-t1, DM)
