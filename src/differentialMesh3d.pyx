@@ -572,9 +572,13 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
             y = self.Y[v] + self.DY[v]
             z = self.Z[v] + self.DZ[v]
 
-          self.X[v] = x
-          self.Y[v] = y
-          self.Z[v] = z
+          free = self.zonemap.__sphere_is_free_ignore(x, y, z, v, self.nearl*0.3)
+          if free>0:
+            self.X[v] = x
+            self.Y[v] = y
+            self.Z[v] = z
+          else:
+            pass
 
     return blocked
 

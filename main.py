@@ -8,7 +8,6 @@ NMAX = int(10e7)
 ITT = int(10e7)
 OPT_ITT = 1
 
-STP = 1.0e-5
 NEARL = 0.0028
 H = NEARL*1.2
 
@@ -16,10 +15,11 @@ FARL = 0.03
 
 FLIP_LIMIT = NEARL*0.5
 
-EXPORT_ITT = 10
+EXPORT_ITT = 20
 STAT_ITT = 1
 
 
+STP = 1.0e-6
 REJECT_STP = STP*1.0
 TRIANGLE_STP = STP*0.3
 ATTRACT_STP = STP*0.3
@@ -178,11 +178,11 @@ def main(argv):
 
       DM.optimize_edges(H, FLIP_LIMIT)
 
-      for he in unique((random(DM.get_henum())<0.004).nonzero()[0]):
+      for he in unique((random(DM.get_henum())<0.009).nonzero()[0]):
         DM.add_edge_intensity(he, 1.0)
 
-      DM.diminish_all_vertex_intensity(0.95)
-      DM.smooth_intensity(0.05)
+      DM.diminish_all_vertex_intensity(0.99)
+      DM.smooth_intensity(0.01)
 
       if i%STAT_ITT==0:
         print_stats(i, time()-t1, DM)
