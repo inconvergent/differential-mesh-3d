@@ -860,7 +860,13 @@ cdef class Mesh3d:
 
     cdef list vv
 
-    i = 0
+    cdef double minedge = 100.0
+    cdef double maxedge = -100.0
+    cdef double edgelen = 0.0
+    cdef double avgedge = 0.0
+    cdef int edgenum = 0
+
+    cdef int i = 0
 
     for x,y,z in vertices:
 
@@ -871,6 +877,32 @@ cdef class Mesh3d:
       he1 = self.__new_edge(v1,v2)
       he2 = self.__new_edge(v2,v3)
       he3 = self.__new_edge(v3,v1)
+
+      # look at me doing OOP
+
+      edgelen = self.__get_edge_length(he1)
+      avgedge += edgelen
+      edgenum += 1
+      if edgelen>maxedge:
+        maxedge = edgelen
+      if edgelen<minedge:
+        minedge = edgelen
+
+      edgelen = self.__get_edge_length(he2)
+      avgedge += edgelen
+      edgenum += 1
+      if edgelen>maxedge:
+        maxedge = edgelen
+      if edgelen<minedge:
+        minedge = edgelen
+
+      edgelen = self.__get_edge_length(he3)
+      avgedge += edgelen
+      edgenum += 1
+      if edgelen>maxedge:
+        maxedge = edgelen
+      if edgelen<minedge:
+        minedge = edgelen
 
       self.__set_next_of_triangle(he1,he2,he3)
       f1 = self.__new_face(he1)
@@ -885,6 +917,8 @@ cdef class Mesh3d:
       dict_list_add(facemap, k2, he2)
       dict_list_add(facemap, k3, he3)
 
+    avgedge /= <double>edgenum
+
     for k1,vv in facemap.iteritems():
 
       if len(vv)>1:
@@ -893,6 +927,10 @@ cdef class Mesh3d:
         he2 = <int>vv[1]
 
         self.__set_mutual_twins(he1,he2)
+
+    print('edge avg length: {:02.10f}'.format(avgedge))
+    print('edge min length: {:02.10f}'.format(minedge))
+    print('edge max length: {:02.10f}'.format(maxedge))
 
     return 1
 

@@ -15,15 +15,15 @@ FARL = 0.03
 
 FLIP_LIMIT = NEARL*0.5
 
-EXPORT_ITT = 20
+EXPORT_ITT = 100
 STAT_ITT = 1
 
 
-STP = 1.0e-6
+STP = 1.0e-7
 REJECT_STP = STP*1.0
 TRIANGLE_STP = STP*0.3
 ATTRACT_STP = STP*0.3
-UNFOLD_STP = STP*0.3
+UNFOLD_STP = STP*0
 COHESION_STP = STP*0.
 
 
@@ -40,7 +40,11 @@ def random_unit_vec(num, scale):
 
   return rnd*scale
 
-def load_obj(fn):
+def load_obj(
+  fn,
+  sx=[1.0,1.0,1.0],
+  mx=[0,5,0.5,0.5]
+):
 
   from codecs import open
   from numpy import row_stack
@@ -81,8 +85,17 @@ def load_obj(fn):
   print('z min max, {:0.8f} {:0.8f}, dst: {:0.8f}'.format(zmin,zmax,dz))
 
   np_vertices /= max([dx,dy,dz])
-  np_vertices *= 0.02
-  np_vertices += 0.5
+
+  # np_vertices *= 0.02
+  # np_vertices += 0.5
+
+  np_vertices[:,0] *= sx[0]
+  np_vertices[:,1] *= sx[1]
+  np_vertices[:,2] *= sx[2]
+
+  np_vertices[:,0] += mx[0]
+  np_vertices[:,1] += mx[1]
+  np_vertices[:,2] += mx[2]
 
   xmax = np_vertices[:,0].max()
   xmin = np_vertices[:,0].min()
@@ -148,7 +161,11 @@ def main(argv):
 
   DM = DifferentialMesh3d(NMAX, FARL, NEARL, FARL)
 
-  data = load_obj(fn_obj)
+  data = load_obj(
+    fn_obj,
+    sx = [0.1]*3,
+    mx = [0.5]*3
+  )
   DM.initiate_faces(data['vertices'], data['faces'])
 
   noise = random_unit_vec(DM.get_vnum(), 1.0e-4)
@@ -165,7 +182,6 @@ def main(argv):
 
       t1 = time()
 
-      #DM.optimize_position(STP, OPT_ITT, scale_intensity=1)
       DM.optimize_position(
         REJECT_STP,
         TRIANGLE_STP,
@@ -181,8 +197,8 @@ def main(argv):
       for he in unique((random(DM.get_henum())<0.009).nonzero()[0]):
         DM.add_edge_intensity(he, 1.0)
 
-      DM.diminish_all_vertex_intensity(0.99)
-      DM.smooth_intensity(0.01)
+      DM.diminish_all_vertex_intensity(0.97)
+      DM.smooth_intensity(0.05)
 
       if i%STAT_ITT==0:
         print_stats(i, time()-t1, DM)
