@@ -163,7 +163,7 @@ def main(argv):
 
   data = load_obj(
     fn_obj,
-    sx = [0.1]*3,
+    sx = [0.01]*3,
     mx = [0.5]*3
   )
   DM.initiate_faces(data['vertices'], data['faces'])
@@ -198,7 +198,7 @@ def main(argv):
         DM.add_edge_intensity(he, 1.0)
 
       DM.diminish_all_vertex_intensity(0.97)
-      DM.smooth_intensity(0.05)
+      DM.smooth_intensity(0.01)
 
       if i%STAT_ITT==0:
         print_stats(i, time()-t1, DM)
