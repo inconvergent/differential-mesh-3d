@@ -134,6 +134,8 @@ cdef class Mesh3d:
 
   cpdef int set_vertex_intensity(self, int v1, double i)
 
+  cpdef int set_vertices_intensity(self, np.ndarray[long, mode="c",ndim=1] a, double i)
+
   cpdef int set_edge_intensity(self, int he1, double i)
 
   cpdef int add_edge_intensity(self, int he1, double i)

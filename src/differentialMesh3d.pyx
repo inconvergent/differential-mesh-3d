@@ -538,6 +538,11 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     cdef double x
     cdef double y
     cdef double z
+    cdef double dx
+    cdef double dy
+    cdef double dz
+    cdef double nrm
+    cdef double stp_limit = self.nearl*0.3
 
     cdef int blocked = 0
 
@@ -560,25 +565,36 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
         self.__unfold(unfold_stp)
 
       with nogil, parallel(num_threads=procs):
+      #if True:
 
         for v in prange(self.vnum, schedule='guided'):
+        #for v in xrange(self.vnum):
+
+          dx = self.DX[v]
+          dy = self.DY[v]
+          dz = self.DZ[v]
+
+          nrm = sqrt(dx*dx+dy*dy+dz*dz)
+
+          if nrm>stp_limit:
+            dx = dx / nrm * stp_limit
+            dy = dy / nrm * stp_limit
+            dz = dz / nrm * stp_limit
 
           if scale_intensity>0:
-            x = self.X[v] + self.I[v]*self.DX[v]
-            y = self.Y[v] + self.I[v]*self.DY[v]
-            z = self.Z[v] + self.I[v]*self.DZ[v]
+            x = self.X[v] + self.I[v]*dx
+            y = self.Y[v] + self.I[v]*dy
+            z = self.Z[v] + self.I[v]*dz
           else:
             x = self.X[v] + self.DX[v]
             y = self.Y[v] + self.DY[v]
             z = self.Z[v] + self.DZ[v]
 
-          free = self.zonemap.__sphere_is_free_ignore(x, y, z, v, self.nearl*0.3)
+          free = self.zonemap.__sphere_is_free_ignore(x, y, z, v, stp_limit)
           if free>0:
             self.X[v] = x
             self.Y[v] = y
             self.Z[v] = z
-          else:
-            pass
 
     return blocked
 

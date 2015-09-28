@@ -15,15 +15,17 @@ FARL = 0.03
 
 FLIP_LIMIT = NEARL*0.5
 
-EXPORT_ITT = 100
+EXPORT_ITT = 1000
 STAT_ITT = 1
 
 
-STP = 1.0e-7
+
+STP = 1.0e-6
+#STP = 1.0e-7
 REJECT_STP = STP*1.0
 TRIANGLE_STP = STP*0.3
 ATTRACT_STP = STP*0.3
-UNFOLD_STP = STP*0
+UNFOLD_STP = STP*0.3
 COHESION_STP = STP*0.
 
 
@@ -153,7 +155,9 @@ def main(argv):
   from time import time
   from modules.helpers import print_stats
   from numpy import unique
+  from numpy import array
   from numpy.random import random
+  from numpy.random import randint
 
   name = argv[0]
   fn_obj = './data/base.obj'
@@ -170,6 +174,9 @@ def main(argv):
 
   noise = random_unit_vec(DM.get_vnum(), 1.0e-4)
   DM.position_noise(noise, scale_intensity=-1)
+
+  alive_vertices = set(randint(DM.get_vnum(), size=DM.get_vnum()))
+  print(alive_vertices)
 
   DM.optimize_edges(H, FLIP_LIMIT)
 
@@ -194,11 +201,13 @@ def main(argv):
 
       DM.optimize_edges(H, FLIP_LIMIT)
 
-      for he in unique((random(DM.get_henum())<0.009).nonzero()[0]):
-        DM.add_edge_intensity(he, 1.0)
+      DM.diminish_all_vertex_intensity(0.99)
 
-      DM.diminish_all_vertex_intensity(0.97)
-      DM.smooth_intensity(0.01)
+      DM.set_vertices_intensity(array([v for v in alive_vertices]), 1.0)
+      for he in unique((random(DM.get_henum())<0.009).nonzero()[0]):
+        DM.add_edge_intensity(he, 0.05)
+
+      DM.smooth_intensity(0.05)
 
       if i%STAT_ITT==0:
         print_stats(i, time()-t1, DM)

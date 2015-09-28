@@ -1143,6 +1143,18 @@ cdef class Mesh3d:
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
+  cpdef int set_vertices_intensity(self, np.ndarray[long, mode="c",ndim=1] a, double i):
+
+    cdef int v1
+
+    for v1 in a:
+      self.__set_vertex_intensity(v1, i)
+
+    return 1
+
+  @cython.wraparound(False)
+  @cython.boundscheck(False)
+  @cython.nonecheck(False)
   cpdef int set_edge_intensity(self, int he1, double i):
 
     self.__set_edge_intensity(he1, i)
