@@ -1,4 +1,4 @@
 #!/bin/bash
 
-blender="/opt/blender-2.75ax64/blender"
+blender="/usr/bin/blender"
 
