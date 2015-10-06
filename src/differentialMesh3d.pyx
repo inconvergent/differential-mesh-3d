@@ -367,9 +367,9 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     cdef int last
     cdef int k
 
-    cdef double dx
-    cdef double dy
-    cdef double dz
+    cdef double crossx
+    cdef double crossy
+    cdef double crossz
     cdef double midx
     cdef double midy
     cdef double midz
@@ -387,6 +387,21 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     cdef double dv2y
     cdef double dv2z
 
+    cdef double fx
+    cdef double fy
+    cdef double fz
+    cdef double lx
+    cdef double ly
+    cdef double lz
+
+    cdef double ax
+    cdef double ay
+    cdef double az
+
+    cdef double bx
+    cdef double by
+    cdef double bz
+
     cdef double dnrmv1
     cdef double dnrmv2
 
@@ -403,19 +418,36 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
       first = self.HE[k].first
       last = self.HE[k].last
 
-      midx = (self.X[first] + self.X[last])*0.5
-      midy = (self.Y[first] + self.Y[last])*0.5
-      midz = (self.Z[first] + self.Z[last])*0.5
-
       v1 = self.HE[self.HE[k].next].last
       v2 = self.HE[self.HE[self.HE[k].twin].next].last
 
       v1x = self.X[v1]
       v1y = self.Y[v1]
       v1z = self.Z[v1]
+
       v2x = self.X[v2]
       v2y = self.Y[v2]
       v2z = self.Z[v2]
+
+      fx = self.X[first]
+      fy = self.Y[first]
+      fz = self.Z[first]
+
+      lx = self.X[last]
+      ly = self.Y[last]
+      lz = self.Z[last]
+
+      midx = (fx+lx)*0.5
+      midy = (fy+ly)*0.5
+      midz = (fz+lz)*0.5
+
+      ax = fx-v1x
+      ay = fy-v1y
+      az = fz-v1z
+
+      bx = lx-v1x
+      by = ly-v1y
+      bz = lz-v1z
 
       dv1x = v1x - midx
       dv1y = v1y - midy
@@ -425,10 +457,17 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
       dv2y = v2y - midy
       dv2z = v2z - midz
 
-      dx = v2x-v1x
-      dy = v2y-v1y
-      dz = v2z-v1z
-      nrm = sqrt(dx*dx+dy*dy+dz*dz)
+      crossx = ay*bz-by*az
+      crossy = -(ax*bz-az*bx)
+      crossz = ax*by-ay*bx
+
+      if crossx*(v1x-v2x) + crossy*(v1y-v2y) + crossz*(v1z-v2z)<0.:
+        ## flip
+        crossx = by*az-ay*bz
+        crossy = -(bx*az-bz*ax)
+        crossz = bx*ay-by*ax
+
+      nrm = sqrt(crossx*crossx+crossy*crossy+crossz*crossz)
 
       if nrm<=0.0:
         continue
@@ -447,10 +486,10 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
       s = stp/nrm*invdot
 
-      ## reject
-      self.DX[v1] -= dx*s
-      self.DY[v1] -= dy*s
-      self.DZ[v1] -= dz*s
+      ### reject
+      self.DX[v1] += crossx*s
+      self.DY[v1] += crossy*s
+      self.DZ[v1] += crossz*s
 
     return 1
 
