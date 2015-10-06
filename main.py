@@ -57,7 +57,7 @@ def main(argv):
   )
   DM.initiate_faces(data['vertices'], data['faces'])
 
-  noise = random_unit_vec(DM.get_vnum(), 1.0e-5)
+  noise = random_unit_vec(DM.get_vnum(), 1.0e-3)
   DM.position_noise(noise, scale_intensity=-1)
 
   #alive_vertices = set(randint(DM.get_vnum(), size=DM.get_vnum()))
@@ -91,8 +91,8 @@ def main(argv):
 
       DM.diminish_all_vertex_intensity(0.99)
 
-      if i%500 == 0:
-        alive_vertices = list(l for l in set(get_surface_edges(DM)) if random()<0.3)
+      if i%1000 == 0:
+        alive_vertices = list(l for l in set(get_surface_edges(DM)) if random()<0.1)
         print(alive_vertices)
 
       if len(alive_vertices)>0:
@@ -100,13 +100,13 @@ def main(argv):
       #for he in unique((random(DM.get_henum())<0.009).nonzero()[0]):
         #DM.add_edge_intensity(he, 0.05)
 
-      DM.smooth_intensity(0.1)
+      DM.smooth_intensity(0.05)
 
       if i%STAT_ITT==0:
         print_stats(i, time()-t1, DM)
 
       if i%EXPORT_ITT==0:
-        fn = '{:s}_{:06d}.obj'.format(fn_out, i)
+        fn = '{:s}_{:08d}.obj'.format(fn_out, i)
         export_obj(DM, 'thing_mesh', fn,NMAX)
 
     except KeyboardInterrupt:
