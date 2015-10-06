@@ -3,15 +3,20 @@
 
 from __future__ import print_function
 
+from modules.utils import export_obj
+from modules.utils import load_obj
+from modules.utils import random_unit_vec
+from modules.utils import get_surface_edges
+
 
 NMAX = int(10e7)
 ITT = int(10e7)
 OPT_ITT = 1
 
-NEARL = 0.004
+NEARL = 0.0028
 H = NEARL*1.2
 
-FARL = 0.04
+FARL = 0.05
 
 FLIP_LIMIT = NEARL*0.5
 
@@ -19,134 +24,14 @@ EXPORT_ITT = 1000
 STAT_ITT = 1
 
 
-
 #STP = 1.0e-6
 STP = 1.0e-7
 REJECT_STP = STP*1.0
-TRIANGLE_STP = STP*0.3
-ATTRACT_STP = STP*0.3
-UNFOLD_STP = STP*0.05
+TRIANGLE_STP = STP*0.1
+ATTRACT_STP = STP*0.1
+UNFOLD_STP = STP*0.2
 COHESION_STP = STP*0.
 
-
-
-def random_unit_vec(num, scale):
-
-  from numpy.random import normal
-  from numpy.linalg import norm
-  from numpy import reshape
-
-  rnd = normal(size=(num,3))
-  d = norm(rnd,axis=1)
-  rnd[:] /= reshape(d, (num,1))
-
-  return rnd*scale
-
-def load_obj(
-  fn,
-  sx=[1.0,1.0,1.0],
-  mx=[0,5,0.5,0.5]
-):
-
-  from codecs import open
-  from numpy import row_stack
-
-  vertices = []
-  faces = []
-
-  with open(fn, 'r', encoding='utf8') as f:
-
-    for l in f:
-      if l.startswith('#'):
-        continue
-
-      values = l.split()
-      if not values:
-        continue
-      if values[0] == 'v':
-        vertices.append([float(v) for v in values[1:]])
-
-      if values[0] == 'f':
-        faces.append([int(v)-1 for v in values[1:]])
-
-  np_vertices = row_stack(vertices)
-
-  xmax = np_vertices[:,0].max()
-  xmin = np_vertices[:,0].min()
-  ymax = np_vertices[:,1].max()
-  ymin = np_vertices[:,1].min()
-  zmax = np_vertices[:,2].max()
-  zmin = np_vertices[:,2].min()
-  dx = xmax - xmin
-  dy = ymax - ymin
-  dz = zmax - zmin
-
-  print('original')
-  print('x min max, {:0.8f} {:0.8f}, dst: {:0.8f}'.format(xmin,xmax,dx))
-  print('y min max, {:0.8f} {:0.8f}, dst: {:0.8f}'.format(ymin,ymax,dy))
-  print('z min max, {:0.8f} {:0.8f}, dst: {:0.8f}'.format(zmin,zmax,dz))
-
-  np_vertices /= max([dx,dy,dz])
-
-  # np_vertices *= 0.02
-  # np_vertices += 0.5
-
-  np_vertices[:,0] *= sx[0]
-  np_vertices[:,1] *= sx[1]
-  np_vertices[:,2] *= sx[2]
-
-  np_vertices[:,0] += mx[0]
-  np_vertices[:,1] += mx[1]
-  np_vertices[:,2] += mx[2]
-
-  xmax = np_vertices[:,0].max()
-  xmin = np_vertices[:,0].min()
-  ymax = np_vertices[:,1].max()
-  ymin = np_vertices[:,1].min()
-  zmax = np_vertices[:,2].max()
-  zmin = np_vertices[:,2].min()
-  dx = xmax - xmin
-  dy = ymax - ymin
-  dz = zmax - zmin
-
-  print('rescaled')
-  print('x min max, {:0.8f} {:0.8f}, dst: {:0.8f}'.format(xmin,xmax,dx))
-  print('y min max, {:0.8f} {:0.8f}, dst: {:0.8f}'.format(ymin,ymax,dy))
-  print('z min max, {:0.8f} {:0.8f}, dst: {:0.8f}'.format(zmin,zmax,dz))
-
-  return {
-    'faces': faces,
-    'vertices': [list(row) for row in np_vertices]
-  }
-
-def export_obj(dm,obj_name,fn):
-
-  from numpy import zeros
-  from codecs import open
-
-  np_verts = zeros((NMAX,3),'float')
-  np_tris = zeros((NMAX,3),'int')
-
-  vnum = dm.np_get_vertices(np_verts)
-  tnum = dm.np_get_triangles_vertices(np_tris)
-
-  print('storing mesh ...')
-  print('num vertices: {:d}, num triangles: {:d}'.format(vnum, tnum))
-
-  with open(fn, 'wb', encoding='utf8') as f:
-
-    f.write('o {:s}\n'.format(obj_name))
-
-    for v in np_verts[:vnum,:]:
-      f.write('v {:f} {:f} {:f}\n'.format(*v))
-
-    f.write('s off\n')
-
-    for t in np_tris[:tnum,:]:
-      t += 1
-      f.write('f {:d} {:d} {:d}\n'.format(*t))
-
-    print('done.')
 
 
 def main(argv):
@@ -167,15 +52,18 @@ def main(argv):
 
   data = load_obj(
     fn_obj,
-    sx = [0.01]*3,
+    sx = [0.02]*3,
     mx = [0.5]*3
   )
   DM.initiate_faces(data['vertices'], data['faces'])
 
-  noise = random_unit_vec(DM.get_vnum(), 1.0e-4)
+  noise = random_unit_vec(DM.get_vnum(), 1.0e-3)
   DM.position_noise(noise, scale_intensity=-1)
 
-  alive_vertices = set(randint(DM.get_vnum(), size=DM.get_vnum()))
+  #alive_vertices = set(randint(DM.get_vnum(), size=DM.get_vnum()))
+  #print(alive_vertices)
+
+  alive_vertices = set(l for l in get_surface_edges(DM) if random()<0.3)
   print(alive_vertices)
 
   DM.optimize_edges(H, FLIP_LIMIT)
@@ -207,14 +95,14 @@ def main(argv):
       for he in unique((random(DM.get_henum())<0.009).nonzero()[0]):
         DM.add_edge_intensity(he, 0.05)
 
-      DM.smooth_intensity(0.05)
+      DM.smooth_intensity(0.1)
 
       if i%STAT_ITT==0:
         print_stats(i, time()-t1, DM)
 
       if i%EXPORT_ITT==0:
         fn = '{:s}_{:06d}.obj'.format(fn_out, i)
-        export_obj(DM, 'thing_mesh', fn)
+        export_obj(DM, 'thing_mesh', fn,NMAX)
 
     except KeyboardInterrupt:
 

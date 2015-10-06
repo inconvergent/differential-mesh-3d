@@ -70,7 +70,7 @@ cdef class Mesh3d:
 
   cdef void __set_mutual_twins(self, int he1, int he2) nogil
 
-  cdef int __is_surface_edge(self, int t1) nogil
+  cdef int __is_surface_edge(self, int he1) nogil
 
   cdef int __next_surface(self, int he1, int direction) nogil
 
@@ -151,7 +151,7 @@ cdef class Mesh3d:
 
   cpdef int diminish_all_vertex_intensity(self, double d)
 
-  cpdef int is_surface_edge(self, int t1)
+  cpdef int is_surface_edge(self, int he1)
 
   cpdef double get_edge_length(self, int he1)
 
