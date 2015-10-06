@@ -52,18 +52,18 @@ def main(argv):
 
   data = load_obj(
     fn_obj,
-    sx = [0.02]*3,
+    sx = [0.01]*3,
     mx = [0.5]*3
   )
   DM.initiate_faces(data['vertices'], data['faces'])
 
-  noise = random_unit_vec(DM.get_vnum(), 1.0e-3)
+  noise = random_unit_vec(DM.get_vnum(), 1.0e-5)
   DM.position_noise(noise, scale_intensity=-1)
 
   #alive_vertices = set(randint(DM.get_vnum(), size=DM.get_vnum()))
   #print(alive_vertices)
 
-  alive_vertices = set(l for l in get_surface_edges(DM) if random()<0.3)
+  alive_vertices = list(l for l in set(get_surface_edges(DM)) if random()<0.5)
   print(alive_vertices)
 
   DM.optimize_edges(H, FLIP_LIMIT)
@@ -91,9 +91,14 @@ def main(argv):
 
       DM.diminish_all_vertex_intensity(0.99)
 
-      DM.set_vertices_intensity(array([v for v in alive_vertices]), 1.0)
-      for he in unique((random(DM.get_henum())<0.009).nonzero()[0]):
-        DM.add_edge_intensity(he, 0.05)
+      if i%500 == 0:
+        alive_vertices = list(l for l in set(get_surface_edges(DM)) if random()<0.3)
+        print(alive_vertices)
+
+      if len(alive_vertices)>0:
+        DM.set_vertices_intensity(array([v for v in alive_vertices]), 1.0)
+      #for he in unique((random(DM.get_henum())<0.009).nonzero()[0]):
+        #DM.add_edge_intensity(he, 0.05)
 
       DM.smooth_intensity(0.1)
 
