@@ -44,7 +44,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
   cdef int __attract(self, double scale) nogil
 
-  cdef int __unfold(self, double scale) nogil
+  cdef int __unfold(self, double scale) #nogil
 
   cdef int __find_nearby_sources(self) nogil
 

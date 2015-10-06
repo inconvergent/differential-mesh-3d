@@ -357,7 +357,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.boundscheck(False)
   @cython.nonecheck(False)
   @cython.cdivision(True)
-  cdef int __unfold(self, double stp) nogil:
+  cdef int __unfold(self, double stp):# nogil:
     """
     """
 
@@ -397,7 +397,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
     for k in xrange(self.henum):
 
-      if self.__is_surface_edge(k)<0:
+      if self.__is_surface_edge(k)>0:
         continue
 
       first = self.HE[k].first
@@ -420,6 +420,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
       dv1x = v1x - midx
       dv1y = v1y - midy
       dv1z = v1z - midz
+
       dv2x = v2x - midx
       dv2y = v2y - midy
       dv2z = v2z - midz
@@ -429,7 +430,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
       dz = v2z-v1z
       nrm = sqrt(dx*dx+dy*dy+dz*dz)
 
-      if nrm<=0:
+      if nrm<=0.0:
         continue
 
       dnrmv1 = sqrt(dv1x*dv1x+dv1y*dv1y+dv1z*dv1z)

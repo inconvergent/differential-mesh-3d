@@ -506,7 +506,7 @@ cdef class Mesh3d:
                             cpow(self.Y[d]-self.Y[c],2)+
                             cpow(self.Z[d]-self.Z[c],2))
 
-    if ablen<dclen or dclen<limit2 or ablen<limit2:
+    if ablen<dclen*1.2 or dclen<limit2 or ablen<limit2:
 
       return -1
 
