@@ -16,7 +16,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
   cdef double farl
 
-  cdef int num_sources
+  cdef long num_sources
 
   cdef double source_rad
 
@@ -36,42 +36,42 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
   ## FUNCTIONS
 
-  cdef int __edge_vertex_force(self, int he1, int v1, double scale) nogil
+  cdef long __edge_vertex_force(self, long he1, long v1, double scale) nogil
 
-  cdef int __triangle_force(self, double scale) nogil
+  cdef long __triangle_force(self, double scale) nogil
 
-  cdef int __reject(self, double scale) nogil
+  cdef long __reject(self, double scale) nogil
 
-  cdef int __attract(self, double scale) nogil
+  cdef long __attract(self, double scale) nogil
 
-  cdef int __unfold(self, double scale) #nogil
+  cdef long __unfold(self, double scale) #nogil
 
-  cdef int __find_nearby_sources(self) nogil
+  cdef long __find_nearby_sources(self) nogil
 
-  cdef int __smooth_intensity(self, double alpha) nogil
+  cdef long __smooth_intensity(self, double alpha) nogil
 
   ## EXTERNAL
 
-  cpdef int initialize_sources(self, list sources, double source_rad)
+  cpdef long initialize_sources(self, list sources, double source_rad)
 
-  cpdef int find_nearby_sources(self)
+  cpdef long find_nearby_sources(self)
 
-  cpdef int smooth_intensity(self, double alpha)
+  cpdef long smooth_intensity(self, double alpha)
 
-  cpdef int position_noise(
+  cpdef long position_noise(
     self,
     np.ndarray[double, mode="c",ndim=2] a,
-    int scale_intensity
+    long scale_intensity
   )
 
-  cpdef int optimize_position(
+  cpdef long optimize_position(
     self,
     double reject_stp,
     double triangle_stp,
     double attract_stp,
     double unfold_stp,
     double cohesion_stp,
-    int itt,
-    int scale_intensity
+    long itt,
+    long scale_intensity
   )
 

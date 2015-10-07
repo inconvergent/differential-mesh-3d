@@ -16,18 +16,17 @@ from libc.math cimport sin
 from libc.math cimport fabs
 
 from helpers cimport double_array_init
-from helpers cimport int_array_init
-from helpers cimport int_array_init
+from helpers cimport long_array_init
 from helpers cimport vcross
 
 import numpy as np
 cimport numpy as np
 
-cdef int procs = 4
+cdef long procs = 4
 
 cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
-  def __init__(self, int nmax, double zonewidth, double nearl, double farl):
+  def __init__(self, long nmax, double zonewidth, double nearl, double farl):
 
     mesh3d.Mesh3d.__init__(self, nmax, zonewidth)
 
@@ -52,7 +51,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
     return
 
-  def __cinit__(self, int nmax, *arg, **args):
+  def __cinit__(self, long nmax, *arg, **args):
 
     self.DX = <double *>malloc(nmax*sizeof(double))
 
@@ -87,15 +86,15 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cdef int __find_nearby_sources(self) nogil:
+  cdef long __find_nearby_sources(self) nogil:
 
-    cdef int v
-    cdef int n
-    cdef int num
-    cdef int hits = 0
+    cdef long v
+    cdef long n
+    cdef long num
+    cdef long hits = 0
 
-    cdef int asize = self.source_zonemap.__get_max_sphere_count()
-    cdef int *vertices = <int *>malloc(asize*sizeof(int))
+    cdef long asize = self.source_zonemap.__get_max_sphere_count()
+    cdef long *vertices = <long *>malloc(asize*sizeof(long))
 
     for v in xrange(self.vnum):
 
@@ -121,21 +120,21 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cdef int __smooth_intensity(self, double alpha) nogil:
+  cdef long __smooth_intensity(self, double alpha) nogil:
 
-    cdef int vnum = self.vnum
-    cdef int e
-    cdef int v
-    cdef int v1
-    cdef int v2
+    cdef long vnum = self.vnum
+    cdef long e
+    cdef long v
+    cdef long v1
+    cdef long v2
     cdef double a
     cdef double b
 
     newintensity = <double *>malloc(vnum*sizeof(double))
     double_array_init(newintensity, vnum, 0.)
 
-    count = <int *>malloc(vnum*sizeof(int))
-    int_array_init(count, vnum, 0)
+    count = <long *>malloc(vnum*sizeof(long))
+    long_array_init(count, vnum, 0)
 
     for e in xrange(self.henum):
 
@@ -164,7 +163,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.boundscheck(False)
   @cython.nonecheck(False)
   @cython.cdivision(True)
-  cdef int __reject(self, double stp) nogil:
+  cdef long __reject(self, double stp) nogil:
     """
     all vertices will move away from all neighboring (closer than farl)
     vertices
@@ -173,9 +172,9 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     cdef double farl = self.farl
     cdef double nearl = self.nearl
 
-    cdef int v
-    cdef int k
-    cdef int neigh
+    cdef long v
+    cdef long k
+    cdef long neigh
 
     cdef double x
     cdef double y
@@ -194,13 +193,13 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     #cdef double midy
     #cdef double midz
 
-    cdef int asize = self.zonemap.__get_max_sphere_count()
-    cdef int *vertices
-    cdef int neighbor_num
+    cdef long asize = self.zonemap.__get_max_sphere_count()
+    cdef long *vertices
+    cdef long neighbor_num
 
     with nogil, parallel(num_threads=procs):
 
-      vertices = <int *>malloc(asize*sizeof(int))
+      vertices = <long *>malloc(asize*sizeof(long))
       for v in prange(self.vnum, schedule='guided'):
 
         x = self.X[v]
@@ -272,15 +271,15 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.boundscheck(False)
   @cython.nonecheck(False)
   @cython.cdivision(True)
-  cdef int __attract(self, double stp) nogil:
+  cdef long __attract(self, double stp) nogil:
     """
     vertices will move towards all connected vertices further away than
     nearl
     """
 
-    cdef int v1
-    cdef int v2
-    cdef int k
+    cdef long v1
+    cdef long v2
+    cdef long k
 
     cdef double nearl = self.nearl
 
@@ -357,15 +356,15 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.boundscheck(False)
   @cython.nonecheck(False)
   @cython.cdivision(True)
-  cdef int __unfold(self, double stp):# nogil:
+  cdef long __unfold(self, double stp):# nogil:
     """
     """
 
-    cdef int v1
-    cdef int v2
-    cdef int first
-    cdef int last
-    cdef int k
+    cdef long v1
+    cdef long v2
+    cdef long first
+    cdef long last
+    cdef long k
 
     cdef double crossx
     cdef double crossy
@@ -497,13 +496,13 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.boundscheck(False)
   @cython.nonecheck(False)
   @cython.cdivision(True)
-  cdef int __edge_vertex_force(self, int he1, int v1, double stp) nogil:
+  cdef long __edge_vertex_force(self, long he1, long v1, double stp) nogil:
 
-    cdef int henum = self.henum
+    cdef long henum = self.henum
     cdef double nearl = self.nearl
 
-    cdef int a = self.HE[he1].first
-    cdef int b = self.HE[he1].last
+    cdef long a = self.HE[he1].first
+    cdef long b = self.HE[he1].last
 
     cdef double x = (self.X[b]+self.X[a])*0.5
     cdef double y = (self.Y[b]+self.Y[a])*0.5
@@ -537,11 +536,11 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cdef int __triangle_force(self, double stp) nogil:
+  cdef long __triangle_force(self, double stp) nogil:
 
-    cdef int ab
-    cdef int bc
-    cdef int ca
+    cdef long ab
+    cdef long bc
+    cdef long ca
 
     for f in xrange(self.fnum):
 
@@ -558,20 +557,20 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cpdef int optimize_position(
+  cpdef long optimize_position(
     self,
     double reject_stp,
     double triangle_stp,
     double attract_stp,
     double unfold_stp,
     double cohesion_stp,
-    int itt,
-    int scale_intensity
+    long itt,
+    long scale_intensity
   ):
 
-    cdef int v
-    cdef int i
-    cdef int free
+    cdef long v
+    cdef long i
+    cdef long free
 
     cdef double intensity = 1.0
 
@@ -584,7 +583,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     cdef double nrm
     cdef double stp_limit = self.nearl*0.3
 
-    cdef int blocked = 0
+    cdef long blocked = 0
 
     for i in xrange(itt):
 
@@ -641,9 +640,9 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cpdef int position_noise(self, np.ndarray[double, mode="c",ndim=2] a, int scale_intensity):
+  cpdef long position_noise(self, np.ndarray[double, mode="c",ndim=2] a, long scale_intensity):
 
-    cdef int v
+    cdef long v
     cdef double intensity = 1
 
     for v in xrange(self.vnum):
@@ -660,10 +659,10 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cpdef int initialize_sources(self, list sources, double source_rad):
+  cpdef long initialize_sources(self, list sources, double source_rad):
 
-    cdef int i
-    cdef int num_sources
+    cdef long i
+    cdef long num_sources
     cdef double x
     cdef double y
 
@@ -687,14 +686,14 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cpdef int find_nearby_sources(self):
+  cpdef long find_nearby_sources(self):
 
     return self.__find_nearby_sources()
 
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cpdef int smooth_intensity(self, double alpha):
+  cpdef long smooth_intensity(self, double alpha):
 
     return self.__smooth_intensity(alpha)
 

@@ -5,35 +5,35 @@ cimport cython
 from libc.math cimport sqrt
 from libc.math cimport pow
 
-cdef extern from "stdlib.h":
-  void qsort(void *base, int nmemb, int size,
-       int(*compar)(const void *, const void *)) nogil
+#cdef extern from "stdlib.h":
+  #void qsort(void *base, long nmemb, long size,
+       #<long>(*compar)(const void *, const void *)) nogil
 
-cdef inline void int_array_init(int *a, int n, int v) nogil:
-  cdef int i
+cdef inline void long_array_init(long *a, long n, long v) nogil:
+  cdef long i
   for i in xrange(n):
     a[i] = v
   return
 
-cdef inline void float_array_init(float *a, int n, float v) nogil:
-  cdef int i
+cdef inline void float_array_init(float *a, long n, float v) nogil:
+  cdef long i
   for i in xrange(n):
     a[i] = v
   return
 
-cdef inline void double_array_init(double *a, int n, double v) nogil:
-  cdef int i
+cdef inline void double_array_init(double *a, long n, double v) nogil:
+  cdef long i
   for i in xrange(n):
     a[i] = v
   return
 
-#cdef inline int compare(const void *aa, const void *bb):
+#cdef inline long compare(const void *aa, const void *bb):
   #"""
   #compare function used with qsort
   #"""
 
-  #cdef int a = (<int *>(aa))[0]
-  #cdef int b = (<int *>(bb))[0]
+  #cdef long a = (<long *>(aa))[0]
+  #cdef long b = (<long *>(bb))[0]
 
   #if a < b:
     #return -1

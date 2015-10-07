@@ -5,28 +5,28 @@ cimport numpy as np
 from zonemap3d cimport Zonemap3d
 
 cdef struct s_HE:
-  int id # half edge id
-  int gen # generation of edge
-  int first # vertex 1
-  int last # vertex 2
-  int twin # twin edge
-  int next # next edge id
-  int face # adjacent face id
+  long id # half edge id
+  long gen # generation of edge
+  long first # vertex 1
+  long last # vertex 2
+  long twin # twin edge
+  long next # next edge id
+  long face # adjacent face id
 
 ctypedef s_HE sHE
 
 
 cdef class Mesh3d:
 
-  cdef int nmax
+  cdef long nmax
 
-  cdef int vnum
+  cdef long vnum
 
-  cdef int henum
+  cdef long henum
 
-  cdef int fnum
+  cdef long fnum
 
-  cdef int nz
+  cdef long nz
 
   cdef double zonewidth
 
@@ -42,9 +42,9 @@ cdef class Mesh3d:
 
   cdef sHE *HE
 
-  cdef int *VHE
+  cdef long *VHE
 
-  cdef int *FHE
+  cdef long *FHE
 
   cdef Zonemap3d zonemap
 
@@ -52,116 +52,116 @@ cdef class Mesh3d:
 
   ## INTERNAL
 
-  cdef int __valid_new_vertex(self, double x, double y, double z) nogil
+  cdef long __valid_new_vertex(self, double x, double y, double z) nogil
 
-  cdef int __new_vertex(self, double x, double y, double z) nogil
+  cdef long __new_vertex(self, double x, double y, double z) nogil
 
-  cdef int __new_edge(self, int first, int last) nogil
+  cdef long __new_edge(self, long first, long last) nogil
 
-  cdef int __new_edge_from_edge(self, int he1, int last) nogil
+  cdef long __new_edge_from_edge(self, long he1, long last) nogil
 
-  cdef int __new_face(self, int he1) nogil
+  cdef long __new_face(self, long he1) nogil
 
-  cdef void __set_face_of_three_edges(self, int face, int he1, int he2, int he3) nogil
+  cdef void __set_face_of_three_edges(self, long face, long he1, long he2, long he3) nogil
 
-  cdef void __set_gen_of_three_edges(self, int gen, int he1, int he2, int he3) nogil
+  cdef void __set_gen_of_three_edges(self, long gen, long he1, long he2, long he3) nogil
 
-  cdef void __set_edge_of_face(self, int face, int he1) nogil
+  cdef void __set_edge_of_face(self, long face, long he1) nogil
 
-  cdef void __set_mutual_twins(self, int he1, int he2) nogil
+  cdef void __set_mutual_twins(self, long he1, long he2) nogil
 
-  cdef int __is_surface_edge(self, int he1) nogil
+  cdef long __is_surface_edge(self, long he1) nogil
 
-  cdef int __next_surface(self, int he1, int direction) nogil
+  cdef long __next_surface(self, long he1, long direction) nogil
 
-  cdef int __edge_duplicate_test(self, int he1, int a, int b) nogil
+  cdef long __edge_duplicate_test(self, long he1, long a, long b) nogil
 
-  cdef int __flip_edge(self, int he1, double limit) nogil
+  cdef long __flip_edge(self, long he1, double limit) nogil
 
-  cdef int __split_edge(self, int he1) nogil
+  cdef long __split_edge(self, long he1) nogil
 
-  cdef int __set_next_of_triangle(self, int he1, int he2, int he3) nogil
+  cdef long __set_next_of_triangle(self, long he1, long he2, long he3) nogil
 
-  cdef int __split_internal_edge(self, int he1) nogil
+  cdef long __split_internal_edge(self, long he1) nogil
 
-  cdef int __split_surface_edge(self, int he1) nogil
+  cdef long __split_surface_edge(self, long he1) nogil
 
-  cdef int __split_all_longest_triangle_edges(self, double limit) nogil
+  cdef long __split_all_longest_triangle_edges(self, double limit) nogil
 
-  cdef double __get_edge_length(self, int he1) nogil
+  cdef double __get_edge_length(self, long he1) nogil
 
-  cdef int __edge_integrity(self, int he1) nogil
+  cdef long __edge_integrity(self, long he1) nogil
 
-  cdef int __triangle_integrity(self, int face) nogil
+  cdef long __triangle_integrity(self, long face) nogil
 
-  cdef int __safe_vertex_positions(self, double limit) nogil
+  cdef long __safe_vertex_positions(self, double limit) nogil
 
-  cdef double __get_edge_intensity(self, int he1) nogil
+  cdef double __get_edge_intensity(self, long he1) nogil
 
-  cdef void __set_vertex_intensity(self, int v1, double i) nogil
+  cdef void __set_vertex_intensity(self, long v1, double i) nogil
 
-  cdef void __set_edge_intensity(self, int he1, double i) nogil
+  cdef void __set_edge_intensity(self, long he1, double i) nogil
 
-  cdef void __add_edge_intensity(self, int he1, double i) nogil
+  cdef void __add_edge_intensity(self, long he1, double i) nogil
 
   ## EXTERNAL
 
-  cpdef int edge_integrity(self, int he1)
+  cpdef long edge_integrity(self, long he1)
 
-  cpdef int triangle_integrity(self, int face)
+  cpdef long triangle_integrity(self, long face)
 
-  cpdef int safe_vertex_positions(self, double limit)
+  cpdef long safe_vertex_positions(self, double limit)
 
-  cpdef list new_faces_in_ngon(self, double x1, double y1, double z1, double rad, int num)
+  cpdef list new_faces_in_ngon(self, double x1, double y1, double z1, double rad, long num)
 
-  cpdef int next_surface(self, int he1, int direction)
+  cpdef long next_surface(self, long he1, long direction)
 
-  cpdef int flip_edge(self, int he1, double limit)
+  cpdef long flip_edge(self, long he1, double limit)
 
-  cpdef int split_edge(self, int he1)
+  cpdef long split_edge(self, long he1)
 
-  cpdef int optimize_edges(self, double split_limit, double flip_limit)
+  cpdef long optimize_edges(self, double split_limit, double flip_limit)
 
   ## GET DATA
 
-  cpdef int np_get_vertices(self, np.ndarray[double, mode="c",ndim=2] a)
+  cpdef long np_get_vertices(self, np.ndarray[double, mode="c",ndim=2] a)
 
-  cpdef int np_get_triangles_vertices(self, np.ndarray[long, mode="c",ndim=2] a)
+  cpdef long np_get_triangles_vertices(self, np.ndarray[long, mode="c",ndim=2] a)
 
-  cpdef int np_get_triangles_gen(self, np.ndarray[long, mode="c",ndim=1] a)
+  cpdef long np_get_triangles_gen(self, np.ndarray[long, mode="c",ndim=1] a)
 
-  cpdef double get_edge_intensity(self, int he1)
+  cpdef double get_edge_intensity(self, long he1)
 
-  cpdef int set_vertex_intensity(self, int v1, double i)
+  cpdef long set_vertex_intensity(self, long v1, double i)
 
-  cpdef int set_vertices_intensity(self, np.ndarray[long, mode="c",ndim=1] a, double i)
+  cpdef long set_vertices_intensity(self, np.ndarray[long, mode="c",ndim=1] a, double i)
 
-  cpdef int set_edge_intensity(self, int he1, double i)
+  cpdef long set_edge_intensity(self, long he1, double i)
 
-  cpdef int add_edge_intensity(self, int he1, double i)
+  cpdef long add_edge_intensity(self, long he1, double i)
 
 
-  cpdef double get_triangle_intensity(self, int f1)
+  cpdef double get_triangle_intensity(self, long f1)
 
-  cpdef list get_triangle_edges(self, int f1)
+  cpdef list get_triangle_edges(self, long f1)
 
   ## INFO
 
-  cpdef int initiate_faces(self, list vertices, list faces)
+  cpdef long initiate_faces(self, list vertices, list faces)
 
-  cpdef int diminish_all_vertex_intensity(self, double d)
+  cpdef long diminish_all_vertex_intensity(self, double d)
 
-  cpdef int is_surface_edge(self, int he1)
+  cpdef long is_surface_edge(self, long he1)
 
-  cpdef double get_edge_length(self, int he1)
+  cpdef double get_edge_length(self, long he1)
 
-  cpdef dict get_edge_dict(self, int he1)
+  cpdef dict get_edge_dict(self, long he1)
 
-  cpdef list get_triangle_dicts(self, int f)
+  cpdef list get_triangle_dicts(self, long f)
 
-  cpdef int get_vnum(self)
+  cpdef long get_vnum(self)
 
-  cpdef int get_henum(self)
+  cpdef long get_henum(self)
 
-  cpdef int get_fnum(self)
+  cpdef long get_fnum(self)
 
