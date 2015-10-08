@@ -242,6 +242,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
         self.DZ[v] += resz*stp
 
       free(vertices)
+      free(dst)
 
     return 1
 
