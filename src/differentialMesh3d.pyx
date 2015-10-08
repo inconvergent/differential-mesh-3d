@@ -41,10 +41,10 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
     self.farl = farl
 
-    self.num_sources = 0
+    #self.num_sources = 0
 
-    self.source_zonemap = Zonemap3d(self.nz)
-    self.source_zonemap.__assign_xyz_arrays(self.SX, self.SY, self.SZ)
+    #self.source_zonemap = Zonemap3d(self.nz)
+    #self.source_zonemap.__assign_xyz_arrays(self.SX, self.SY, self.SZ)
 
     print('nearl: {:f}'.format(nearl))
     print('farl: {:f}'.format(farl))
@@ -83,39 +83,39 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
     return
 
-  @cython.wraparound(False)
-  @cython.boundscheck(False)
-  @cython.nonecheck(False)
-  cdef long __find_nearby_sources(self) nogil:
+  #@cython.wraparound(False)
+  #@cython.boundscheck(False)
+  #@cython.nonecheck(False)
+  #cdef long __find_nearby_sources(self) nogil:
 
-    cdef long v
-    cdef long n
-    cdef long num
-    cdef long hits = 0
+    #cdef long v
+    #cdef long n
+    #cdef long num
+    #cdef long hits = 0
 
-    cdef long asize = self.source_zonemap.__get_max_sphere_count()
-    cdef long *vertices = <long *>malloc(asize*sizeof(long))
+    #cdef long asize = self.source_zonemap.__get_max_sphere_count()
+    #cdef long *vertices = <long *>malloc(asize*sizeof(long))
 
-    for v in xrange(self.vnum):
+    #for v in xrange(self.vnum):
 
-      num = self.source_zonemap.__sphere_vertices(
-        self.X[v],
-        self.Y[v],
-        self.Z[v],
-        self.source_rad,
-        vertices
-      )
+      #num = self.source_zonemap.__sphere_vertices(
+        #self.X[v],
+        #self.Y[v],
+        #self.Z[v],
+        #self.source_rad,
+        #vertices
+      #)
 
-      for n in xrange(num):
+      #for n in xrange(num):
 
-        self.source_zonemap.__del_vertex(vertices[n])
-        self.__set_vertex_intensity(v, 1.0)
+        #self.source_zonemap.__del_vertex(vertices[n])
+        #self.__set_vertex_intensity(v, 1.0)
 
-        hits += 1
+        #hits += 1
 
-    free(vertices)
+    #free(vertices)
 
-    return hits
+    #return hits
 
   @cython.wraparound(False)
   @cython.boundscheck(False)
@@ -635,39 +635,39 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
     return 1
 
-  @cython.wraparound(False)
-  @cython.boundscheck(False)
-  @cython.nonecheck(False)
-  cpdef long initialize_sources(self, list sources, double source_rad):
+  #@cython.wraparound(False)
+  #@cython.boundscheck(False)
+  #@cython.nonecheck(False)
+  #cpdef long initialize_sources(self, list sources, double source_rad):
 
-    cdef long i
-    cdef long num_sources
-    cdef double x
-    cdef double y
+    #cdef long i
+    #cdef long num_sources
+    #cdef double x
+    #cdef double y
 
-    num_sources = len(sources)
-    self.num_sources = num_sources
-    self.source_rad = source_rad
+    #num_sources = len(sources)
+    #self.num_sources = num_sources
+    #self.source_rad = source_rad
 
-    for i in xrange(num_sources):
+    #for i in xrange(num_sources):
 
-      x,y,z = sources[i]
-      self.SX[i] = x
-      self.SY[i] = y
-      self.SZ[i] = z
+      #x,y,z = sources[i]
+      #self.SX[i] = x
+      #self.SY[i] = y
+      #self.SZ[i] = z
 
-      self.source_zonemap.__add_vertex(i)
+      #self.source_zonemap.__add_vertex(i)
 
-    print('initialized sources: {:d}'.format(num_sources))
+    #print('initialized sources: {:d}'.format(num_sources))
 
-    return 1
+    #return 1
 
-  @cython.wraparound(False)
-  @cython.boundscheck(False)
-  @cython.nonecheck(False)
-  cpdef long find_nearby_sources(self):
+  #@cython.wraparound(False)
+  #@cython.boundscheck(False)
+  #@cython.nonecheck(False)
+  #cpdef long find_nearby_sources(self):
 
-    return self.__find_nearby_sources()
+    #return self.__find_nearby_sources()
 
   @cython.wraparound(False)
   @cython.boundscheck(False)

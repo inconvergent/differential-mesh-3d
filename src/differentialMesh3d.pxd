@@ -16,9 +16,9 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
   cdef double farl
 
-  cdef long num_sources
+  #cdef long num_sources
 
-  cdef double source_rad
+  #cdef double source_rad
 
   cdef double *DX
 
@@ -32,7 +32,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
   cdef double *SZ
 
-  cdef Zonemap3d source_zonemap
+  #cdef Zonemap3d source_zonemap
 
   ## FUNCTIONS
 
@@ -46,15 +46,15 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
   cdef long __unfold(self, double scale) #nogil
 
-  cdef long __find_nearby_sources(self) nogil
+  #cdef long __find_nearby_sources(self) nogil
 
   cdef long __smooth_intensity(self, double alpha) nogil
 
   ## EXTERNAL
 
-  cpdef long initialize_sources(self, list sources, double source_rad)
+  #cpdef long initialize_sources(self, list sources, double source_rad)
 
-  cpdef long find_nearby_sources(self)
+  #cpdef long find_nearby_sources(self)
 
   cpdef long smooth_intensity(self, double alpha)
 
