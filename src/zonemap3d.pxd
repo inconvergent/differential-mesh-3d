@@ -55,6 +55,8 @@ cdef class Zonemap3d:
 
   cdef long __sphere_vertices(self, double x, double y, double z, double rad, long *vertices) nogil
 
+  cdef long __sphere_vertices_dst(self, double x, double y, double z, double rad, long *vertices, double *dst) nogil
+
   cdef long __sphere_is_free(self, double x, double y, double z, double rad) nogil
 
   cdef long __sphere_is_free_ignore(self, double x, double y, double z, long v, double rad) nogil

@@ -9,8 +9,8 @@ from modules.utils import random_unit_vec
 from modules.utils import get_surface_edges
 
 
-NMAX = int(10e7)
-ITT = int(10e7)
+NMAX = int(10e6)
+ITT = int(10e9)
 OPT_ITT = 1
 
 NEARL = 0.0028
@@ -21,7 +21,7 @@ FARL = 0.05
 FLIP_LIMIT = NEARL*0.5
 
 EXPORT_ITT = 1000
-STAT_ITT = 1
+STAT_ITT = 10
 
 
 #STP = 1.0e-6
@@ -92,7 +92,7 @@ def main(argv):
       DM.diminish_all_vertex_intensity(0.99)
 
       if i%1000 == 0:
-        alive_vertices = list(l for l in set(get_surface_edges(DM)) if random()<0.1)
+        alive_vertices = list(l for l in set(get_surface_edges(DM)) if random()<0.7)
         print(alive_vertices)
 
       if len(alive_vertices)>0:

@@ -174,6 +174,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
     cdef long v
     cdef long k
+    cdef long k4
     cdef long neigh
 
     cdef double x
@@ -189,54 +190,43 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     cdef double resy
     cdef double resz
 
-    #cdef double midx
-    #cdef double midy
-    #cdef double midz
-
     cdef long asize = self.zonemap.__get_max_sphere_count()
     cdef long *vertices
+    cdef double *dst
     cdef long neighbor_num
 
     with nogil, parallel(num_threads=procs):
 
       vertices = <long *>malloc(asize*sizeof(long))
+      dst = <double *>malloc(asize*sizeof(double)*4)
       for v in prange(self.vnum, schedule='guided'):
 
         x = self.X[v]
         y = self.Y[v]
         z = self.Z[v]
-        neighbor_num = self.zonemap.__sphere_vertices(x, y, z, farl, vertices)
+        #neighbor_num = self.zonemap.__sphere_vertices(x, y, z, farl, vertices)
+        neighbor_num = self.zonemap.__sphere_vertices_dst(x, y, z, farl, vertices, dst)
 
         resx = 0.0
         resy = 0.0
         resz = 0.0
 
-        #midx = 0.0
-        #midy = 0.0
-        #midz = 0.0
-
         for k in range(neighbor_num):
 
           neigh = vertices[k]
 
-          #midx = midx + self.X[neigh]
-          #midy = midy + self.Y[neigh]
-          #midz = midz + self.Z[neigh]
-
           if neigh == v:
             continue
 
-          dx = x-self.X[neigh]
-          dy = y-self.Y[neigh]
-          dz = z-self.Z[neigh]
-          nrm = sqrt(dx*dx+dy*dy+dz*dz)
+          k4 = k*4
+          nrm = dst[k4+3]
 
           if nrm>farl or nrm<=0.0:
             continue
 
-          dx = dx/nrm
-          dy = dy/nrm
-          dz = dz/nrm
+          dx = dst[k4]/nrm
+          dy = dst[k4+1]/nrm
+          dz = dst[k4+2]/nrm
 
           s = farl-nrm
 
@@ -247,17 +237,6 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
           resy += dy*s
           resz += dz*s
 
-        #midx = midx/float(neighbor_num)
-        #midy = midy/float(neighbor_num)
-        #midz = midz/float(neighbor_num)
-
-        #dx = x - midx
-        #dy = y - midy
-        #dz = z - midz
-
-        #self.DX[v] += resx*stp - dx*stp*5
-        #self.DY[v] += resy*stp - dy*stp*5
-        #self.DZ[v] += resz*stp - dz*stp*5
         self.DX[v] += resx*stp
         self.DY[v] += resy*stp
         self.DZ[v] += resz*stp
