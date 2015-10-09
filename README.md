@@ -1,6 +1,9 @@
 # Differential Mesh 3d
 
-![ani](/img/ani.gif?raw=true "animation")
+<!--![ani](/img/ani.gif?raw=true "animation")-->
+
+![img](/img/img.png?raw=true "img")
+
 
 Differential Mesh is an extension of the Hyphae
 (https://github.com/inconvergent/hyphae) algorithm. I started working on it
