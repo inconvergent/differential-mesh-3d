@@ -832,10 +832,7 @@ cdef class Mesh3d:
 
     return 1
 
-  @cython.wraparound(False)
-  @cython.boundscheck(False)
-  @cython.nonecheck(False)
-  cpdef long initiate_faces(self, list vertices, list faces):
+  cpdef dict initiate_faces(self, list vertices, list faces):
 
     cdef double x
     cdef double y
@@ -932,7 +929,12 @@ cdef class Mesh3d:
     print('edge min length: {:02.10f}'.format(minedge))
     print('edge max length: {:02.10f}'.format(maxedge))
 
-    return 1
+    return {
+      'minedge': minedge,
+      'maxedge': maxedge,
+      'avgedge': avgedge
+    }
+
 
   @cython.wraparound(False)
   @cython.boundscheck(False)

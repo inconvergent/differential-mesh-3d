@@ -16,7 +16,7 @@ OPT_ITT = 1
 NEARL = 0.0028
 H = NEARL*1.2
 
-FARL = 0.05
+FARL = 0.03
 
 FLIP_LIMIT = NEARL*0.5
 
@@ -28,8 +28,8 @@ STAT_ITT = 10
 STP = 1.0e-7
 REJECT_STP = STP*1.0
 TRIANGLE_STP = STP*0.1
-ATTRACT_STP = STP*0.4
-UNFOLD_STP = STP*0.4
+ATTRACT_STP = STP*0.2
+UNFOLD_STP = STP*0.2
 COHESION_STP = STP*0.
 
 
@@ -55,15 +55,17 @@ def main(argv):
     sx = [0.01]*3,
     mx = [0.5]*3
   )
-  DM.initiate_faces(data['vertices'], data['faces'])
+  info = DM.initiate_faces(data['vertices'], data['faces'])
+  if info['minedge']<NEARL:
+    return
 
-  noise = random_unit_vec(DM.get_vnum(), 1.0e-3)
+
+  noise = random_unit_vec(DM.get_vnum(), 1.0e-5)
   DM.position_noise(noise, scale_intensity=-1)
 
-  #alive_vertices = set(randint(DM.get_vnum(), size=DM.get_vnum()))
-  #print(alive_vertices)
+  alive_vertices = set(randint(DM.get_vnum(), size=DM.get_vnum()))
+  #alive_vertices = list(l for l in set(get_surface_edges(DM)) if random()<0.5)
 
-  alive_vertices = list(l for l in set(get_surface_edges(DM)) if random()<0.5)
   print(alive_vertices)
 
   DM.optimize_edges(H, FLIP_LIMIT)
@@ -92,8 +94,9 @@ def main(argv):
       DM.diminish_all_vertex_intensity(0.99)
 
       if i%1000 == 0:
-        alive_vertices = list(l for l in set(get_surface_edges(DM)) if random()<0.7)
-        print(alive_vertices)
+        #alive_vertices = list(l for l in set(get_surface_edges(DM)) if random()<0.7)
+        alive_vertices = set(randint(DM.get_vnum(), size=DM.get_vnum()))
+        print('number of alive vertices: {:d}'.format(len(alive_vertices)))
 
       if len(alive_vertices)>0:
         DM.set_vertices_intensity(array([v for v in alive_vertices]), 1.0)

@@ -147,7 +147,7 @@ cdef class Mesh3d:
 
   ## INFO
 
-  cpdef long initiate_faces(self, list vertices, list faces)
+  cpdef dict initiate_faces(self, list vertices, list faces)
 
   cpdef long diminish_all_vertex_intensity(self, double d)
 
