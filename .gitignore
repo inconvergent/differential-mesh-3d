@@ -12,4 +12,4 @@ src/*.html
 profile/*
 *.blend
 *.blend1
-data/base.json
+bak/*
