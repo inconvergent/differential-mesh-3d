@@ -143,6 +143,8 @@ cdef class Mesh3d:
 
   cpdef double get_triangle_intensity(self, long f1)
 
+  cpdef long get_vertices_intensity(self, np.ndarray[double, mode="c",ndim=1] a)
+
   cpdef list get_triangle_edges(self, long f1)
 
   ## INFO

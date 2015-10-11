@@ -1189,6 +1189,19 @@ cdef class Mesh3d:
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
+  cpdef long get_vertices_intensity(self, np.ndarray[double, mode="c",ndim=1] a):
+
+    cdef long v1
+
+    for v1 in xrange(self.vnum):
+
+      a[v1] = self.I[v1]
+
+    return self.vnum
+
+  @cython.wraparound(False)
+  @cython.boundscheck(False)
+  @cython.nonecheck(False)
   cpdef list get_triangle_edges(self, long f1):
     """
     """

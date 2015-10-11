@@ -60,9 +60,6 @@ def load_obj(
 
   np_vertices /= max([dx,dy,dz])
 
-  # np_vertices *= 0.02
-  # np_vertices += 0.5
-
   np_vertices[:,0] *= sx[0]
   np_vertices[:,1] *= sx[1]
   np_vertices[:,2] *= sx[2]
@@ -91,7 +88,7 @@ def load_obj(
     'vertices': [list(row) for row in np_vertices]
   }
 
-def export_obj(dm,obj_name,fn,nmax):
+def export_obj(dm, obj_name, fn, nmax, export_intensity=False):
 
   from numpy import zeros
   from codecs import open
@@ -101,6 +98,11 @@ def export_obj(dm,obj_name,fn,nmax):
 
   vnum = dm.np_get_vertices(np_verts)
   tnum = dm.np_get_triangles_vertices(np_tris)
+
+  intensity = None
+
+  if export_intensity:
+    intensity = zeros(nmax,'double')
 
   print('storing mesh ...')
   print('num vertices: {:d}, num triangles: {:d}'.format(vnum, tnum))
@@ -117,6 +119,12 @@ def export_obj(dm,obj_name,fn,nmax):
     for t in np_tris[:tnum,:]:
       t += 1
       f.write('f {:d} {:d} {:d}\n'.format(*t))
+
+    if export_intensity:
+      dm.get_vertices_intensity(intensity)
+      for i in intensity[:vnum]:
+        f.write('i {:f}\n'.format(i))
+
 
     print('done.')
 
