@@ -336,7 +336,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.boundscheck(False)
   @cython.nonecheck(False)
   @cython.cdivision(True)
-  cdef long __unfold(self, double stp):# nogil:
+  cdef long __unfold(self, double stp) nogil:
     """
     """
 
@@ -349,29 +349,13 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     cdef double crossx
     cdef double crossy
     cdef double crossz
-    cdef double midx
-    cdef double midy
-    cdef double midz
+
     cdef double v1x
     cdef double v1y
     cdef double v1z
     cdef double v2x
     cdef double v2y
     cdef double v2z
-
-    cdef double dv1x
-    cdef double dv1y
-    cdef double dv1z
-    cdef double dv2x
-    cdef double dv2y
-    cdef double dv2z
-
-    cdef double fx
-    cdef double fy
-    cdef double fz
-    cdef double lx
-    cdef double ly
-    cdef double lz
 
     cdef double ax
     cdef double ay
@@ -381,12 +365,12 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     cdef double by
     cdef double bz
 
-    cdef double dnrmv1
-    cdef double dnrmv2
+    cdef double cx
+    cdef double cy
+    cdef double cz
 
     cdef double nrm
-    cdef double invdot
-
+    cdef double nrmc
     cdef double s
 
     for k in xrange(self.henum):
@@ -408,62 +392,39 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
       v2y = self.Y[v2]
       v2z = self.Z[v2]
 
-      fx = self.X[first]
-      fy = self.Y[first]
-      fz = self.Z[first]
+      ax = self.X[first]-v1x
+      ay = self.Y[first]-v1y
+      az = self.Z[first]-v1z
 
-      lx = self.X[last]
-      ly = self.Y[last]
-      lz = self.Z[last]
+      bx = self.X[last]-v1x
+      by = self.Y[last]-v1y
+      bz = self.Z[last]-v1z
 
-      midx = (fx+lx)*0.5
-      midy = (fy+ly)*0.5
-      midz = (fz+lz)*0.5
-
-      ax = fx-v1x
-      ay = fy-v1y
-      az = fz-v1z
-
-      bx = lx-v1x
-      by = ly-v1y
-      bz = lz-v1z
-
-      dv1x = v1x - midx
-      dv1y = v1y - midy
-      dv1z = v1z - midz
-
-      dv2x = v2x - midx
-      dv2y = v2y - midy
-      dv2z = v2z - midz
+      cx = v1x-v2x
+      cy = v1y-v2y
+      cz = v1z-v2z
 
       crossx = ay*bz-by*az
       crossy = -(ax*bz-az*bx)
       crossz = ax*by-ay*bx
 
-      if crossx*(v1x-v2x) + crossy*(v1y-v2y) + crossz*(v1z-v2z)<0.:
+      if crossx*cx + crossy*cy + crossz*cz<0.:
         ## flip
         crossx = by*az-ay*bz
         crossy = -(bx*az-bz*ax)
         crossz = bx*ay-by*ax
 
       nrm = sqrt(crossx*crossx+crossy*crossy+crossz*crossz)
+      nrmc = sqrt(cx*cx+cy*cy+cz*cz)
 
-      if nrm<=0.0:
+      if nrm<=0.0 or nrmc<0.0:
         continue
 
-      dnrmv1 = sqrt(dv1x*dv1x+dv1y*dv1y+dv1z*dv1z)
-      dnrmv2 = sqrt(dv2x*dv2x+dv2y*dv2y+dv2z*dv2z)
+      crossx /= nrm
+      crossy /= nrm
+      crossz /= nrm
 
-      if dnrmv1<=0.0 or dnrmv2<=0.0:
-        continue
-
-      invdot = 1.0 - fabs(
-        dv1x/dnrmv1*dv2x/dnrmv2+
-        dv1y/dnrmv1*dv2y/dnrmv2+
-        dv1z/dnrmv1*dv2z/dnrmv2
-      )
-
-      s = stp/nrm*invdot
+      s = (1.0-fabs(crossx*cx/nrmc+crossy*cy/nrmc+crossz*cz/nrmc))*stp
 
       ### reject
       self.DX[v1] += crossx*s
@@ -537,6 +498,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
+  @cython.cdivision(True)
   cpdef long optimize_position(
     self,
     double reject_stp,

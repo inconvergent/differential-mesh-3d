@@ -501,21 +501,23 @@ cdef class Mesh3d:
     cdef double ablen = (cpow(self.X[a]-self.X[b],2)+
                             cpow(self.Y[a]-self.Y[b],2)+
                             cpow(self.Z[a]-self.Z[b],2))
+    if ablen<limit2:
+      return -1
 
     cdef double dclen = (cpow(self.X[d]-self.X[c],2)+
                             cpow(self.Y[d]-self.Y[c],2)+
                             cpow(self.Z[d]-self.Z[c],2))
 
-    if ablen<dclen*1.2 or dclen<limit2 or ablen<limit2:
+    if dclen<limit2:
+      return -1
 
+    if ablen<dclen*1.2:
       return -1
 
     if self.__edge_duplicate_test(db1,c,d)!=1:
-
       return -1
 
     if self.__edge_duplicate_test(ca1,c,d)!=1:
-
       return -1
 
     self.__set_mutual_twins(he1, the1)
@@ -1049,11 +1051,11 @@ cdef class Mesh3d:
 
     cdef long he1
 
-    ## TODO: maybe try to do this in one run?
-
     for he1 in xrange(self.henum):
 
-      self.__flip_edge(he1, flip_limit)
+      ## only consider half the half-edges
+      if self.HE[he1].first<self.HE[he1].last:
+        self.__flip_edge(he1, flip_limit)
 
     self.__split_all_longest_triangle_edges(split_limit)
 

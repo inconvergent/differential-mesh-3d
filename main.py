@@ -13,7 +13,7 @@ NMAX = int(10e6)
 ITT = int(10e9)
 OPT_ITT = 1
 
-NEARL = 0.0028
+NEARL = 0.003
 H = NEARL*1.2
 
 FARL = 0.03
@@ -23,13 +23,16 @@ FLIP_LIMIT = NEARL*0.5
 EXPORT_ITT = 1000
 STAT_ITT = 10
 
+SCALE = [0.009]*3
+MOVE = [0.5]*3
+
 
 #STP = 1.0e-6
 STP = 1.0e-7
 REJECT_STP = STP*1.0
 TRIANGLE_STP = STP*0.1
 ATTRACT_STP = STP*0.2
-UNFOLD_STP = STP*0.2
+UNFOLD_STP = STP*0.01
 COHESION_STP = STP*0.
 
 
@@ -52,19 +55,18 @@ def main(argv):
 
   data = load_obj(
     fn_obj,
-    sx = [0.01]*3,
-    mx = [0.5]*3
+    sx = SCALE,
+    mx = MOVE
   )
   info = DM.initiate_faces(data['vertices'], data['faces'])
   if info['minedge']<NEARL:
     return
 
-
-  noise = random_unit_vec(DM.get_vnum(), 1.0e-5)
+  noise = random_unit_vec(DM.get_vnum(), STP*1000.)
   DM.position_noise(noise, scale_intensity=-1)
 
-  alive_vertices = set(randint(DM.get_vnum(), size=DM.get_vnum()))
-  #alive_vertices = list(l for l in set(get_surface_edges(DM)) if random()<0.5)
+  #alive_vertices = set(randint(DM.get_vnum(), size=DM.get_vnum()))
+  alive_vertices = list(l for l in set(get_surface_edges(DM)) if random()<0.5)
 
   print(alive_vertices)
 
@@ -89,21 +91,20 @@ def main(argv):
         scale_intensity=1
       )
 
-      DM.optimize_edges(H, FLIP_LIMIT)
+      if i%10 == 0:
+        DM.optimize_edges(H, FLIP_LIMIT)
 
       DM.diminish_all_vertex_intensity(0.99)
 
-      if i%1000 == 0:
-        #alive_vertices = list(l for l in set(get_surface_edges(DM)) if random()<0.7)
-        alive_vertices = set(randint(DM.get_vnum(), size=DM.get_vnum()))
+      if i%100 == 0:
+        alive_vertices = list(l for l in set(get_surface_edges(DM)) if random()<0.7)
+        #alive_vertices = set(randint(DM.get_vnum(), size=DM.get_vnum()))
         print('number of alive vertices: {:d}'.format(len(alive_vertices)))
 
       if len(alive_vertices)>0:
         DM.set_vertices_intensity(array([v for v in alive_vertices]), 1.0)
-      #for he in unique((random(DM.get_henum())<0.009).nonzero()[0]):
-        #DM.add_edge_intensity(he, 0.05)
 
-      DM.smooth_intensity(0.05)
+      DM.smooth_intensity(0.08)
 
       if i%STAT_ITT==0:
         print_stats(i, time()-t1, DM)
