@@ -38,7 +38,8 @@ def load_obj(
         vertices.append([float(v) for v in values[1:]])
 
       if values[0] == 'f':
-        faces.append([int(v)-1 for v in values[1:]])
+        face = [int(v.split('//')[0])-1 for v in values[1:]]
+        faces.append(face)
 
   np_vertices = row_stack(vertices)
 
