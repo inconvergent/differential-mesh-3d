@@ -88,24 +88,27 @@ def load_obj(
     'vertices': [list(row) for row in np_vertices]
   }
 
-def export_obj(dm, obj_name, fn, nmax, export_intensity=False):
+def export_obj(dm, obj_name, fn, write_intensity=False):
 
   from numpy import zeros
   from codecs import open
 
-  np_verts = zeros((nmax,3),'float')
-  np_tris = zeros((nmax,3),'int')
+  vnum = dm.get_vnum()
+  fnum = dm.get_fnum()
+  np_verts = zeros((vnum,3),'float')
+  np_tris = zeros((fnum,3),'int')
 
-  vnum = dm.np_get_vertices(np_verts)
-  tnum = dm.np_get_triangles_vertices(np_tris)
+  dm.np_get_vertices(np_verts)
+  dm.np_get_triangles_vertices(np_tris)
 
   intensity = None
 
-  if export_intensity:
-    intensity = zeros(nmax,'double')
+  if write_intensity:
+    intensity = zeros(vnum,'double')
+    dm.get_vertices_intensity(intensity)
 
   print('storing mesh ...')
-  print('num vertices: {:d}, num triangles: {:d}'.format(vnum, tnum))
+  print('num vertices: {:d}, num triangles: {:d}'.format(vnum, fnum))
 
   with open(fn, 'wb', encoding='utf8') as f:
 
@@ -116,15 +119,20 @@ def export_obj(dm, obj_name, fn, nmax, export_intensity=False):
 
     f.write('s off\n')
 
-    for t in np_tris[:tnum,:]:
+    for t in np_tris[:fnum,:]:
       t += 1
       f.write('f {:d} {:d} {:d}\n'.format(*t))
 
-    if export_intensity:
-      dm.get_vertices_intensity(intensity)
-      for i in intensity[:vnum]:
-        f.write('i {:f}\n'.format(i))
+    print()
 
+  if write_intensity:
+
+    with open(fn+'.x', 'wb', encoding='utf8') as f:
+
+      f.write('o {:s}\n'.format(obj_name))
+
+      for i in intensity[:vnum]:
+        f.write('f {:f} {:f} {:f}\n'.format(*[i]*3))
 
     print('done.')
 

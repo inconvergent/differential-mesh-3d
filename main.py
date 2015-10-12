@@ -8,6 +8,7 @@ from modules.utils import load_obj
 from modules.utils import random_unit_vec
 from modules.utils import get_surface_edges
 
+PROCS = 4
 
 NMAX = int(10e6)
 ITT = int(10e9)
@@ -51,7 +52,7 @@ def main(argv):
   fn_obj = './data/base.obj'
   fn_out = './res/{:s}'.format(name)
 
-  DM = DifferentialMesh3d(NMAX, FARL, NEARL, FARL)
+  DM = DifferentialMesh3d(NMAX, FARL, NEARL, FARL, PROCS)
 
   data = load_obj(
     fn_obj,
@@ -111,7 +112,7 @@ def main(argv):
 
       if i%EXPORT_ITT==0:
         fn = '{:s}_{:08d}.obj'.format(fn_out, i)
-        export_obj(DM, 'thing_mesh', fn, NMAX, export_intensity=False)
+        export_obj(DM, 'thing_mesh', fn, write_intensity=True)
 
     except KeyboardInterrupt:
 

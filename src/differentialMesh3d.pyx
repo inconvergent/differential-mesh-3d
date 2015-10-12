@@ -22,13 +22,12 @@ from helpers cimport vcross
 import numpy as np
 cimport numpy as np
 
-cdef long procs = 4
 
 cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
-  def __init__(self, long nmax, double zonewidth, double nearl, double farl):
+  def __init__(self, long nmax, double zonewidth, double nearl, double farl, long procs):
 
-    mesh3d.Mesh3d.__init__(self, nmax, zonewidth)
+    mesh3d.Mesh3d.__init__(self, nmax, zonewidth, procs)
 
     """
     - nearl is the closest comfortable distance between two vertices.
@@ -195,7 +194,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     cdef double *dst
     cdef long neighbor_num
 
-    with nogil, parallel(num_threads=procs):
+    with nogil, parallel(num_threads=self.procs):
 
       vertices = <long *>malloc(asize*sizeof(long))
       dst = <double *>malloc(asize*sizeof(double)*4)
@@ -545,7 +544,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
       if unfold_stp>0.0:
         self.__unfold(unfold_stp)
 
-      with nogil, parallel(num_threads=procs):
+      with nogil, parallel(num_threads=self.procs):
       #if True:
 
         for v in prange(self.vnum, schedule='guided'):

@@ -53,7 +53,7 @@ cdef class Mesh3d:
 
   """
 
-  def __init__(self, long nmax, double zonewidth):
+  def __init__(self, long nmax, double zonewidth, long procs):
     """
     initialize triangular mesh.
 
@@ -74,6 +74,8 @@ cdef class Mesh3d:
     self.fnum = 0
 
     self.zonewidth = zonewidth
+
+    self.procs = procs
 
     self.nz = <long>(1.0 /zonewidth)
 
