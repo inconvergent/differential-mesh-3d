@@ -132,7 +132,7 @@ def export_obj(dm, obj_name, fn, write_intensity=False):
       f.write('o {:s}\n'.format(obj_name))
 
       for i in intensity[:vnum]:
-        f.write('f {:f} {:f} {:f}\n'.format(*[i]*3))
+        f.write('c {:f} {:f} {:f}\n'.format(*[i]*3))
 
     print('done.')
 
