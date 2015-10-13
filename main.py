@@ -112,7 +112,7 @@ def main(argv):
 
       if i%EXPORT_ITT==0:
         fn = '{:s}_{:08d}.obj'.format(fn_out, i)
-        export_obj(DM, 'thing_mesh', fn, write_intensity=True)
+        export_obj(DM, 'thing_mesh', fn, write_intensity=False)
 
     except KeyboardInterrupt:
 
