@@ -72,6 +72,8 @@ cdef class Mesh3d:
 
   cdef void __set_mutual_twins(self, long he1, long he2) nogil
 
+  cdef void __set_edge_of_vertex(self, long ve1, long he1) nogil
+
   cdef long __is_surface_edge(self, long he1) nogil
 
   cdef long __next_surface(self, long he1, long direction) nogil
@@ -113,8 +115,6 @@ cdef class Mesh3d:
   cpdef long triangle_integrity(self, long face)
 
   cpdef long safe_vertex_positions(self, double limit)
-
-  cpdef list new_faces_in_ngon(self, double x1, double y1, double z1, double rad, long num)
 
   cpdef long next_surface(self, long he1, long direction)
 

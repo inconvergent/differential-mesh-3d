@@ -351,6 +351,15 @@ cdef class Mesh3d:
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
+  cdef void __set_edge_of_vertex(self, long ve1, long he1) nogil:
+
+    self.VHE[ve1] = he1
+
+    return
+
+  @cython.wraparound(False)
+  @cython.boundscheck(False)
+  @cython.nonecheck(False)
   cdef long __is_surface_edge(self, long he) nogil:
 
     if self.HE[he].twin<0:
@@ -530,6 +539,11 @@ cdef class Mesh3d:
     self.__set_face_of_three_edges(f1, he1, db1, bc1)
     self.__set_face_of_three_edges(f2, the1, ca1, ad1)
 
+    self.__set_edge_of_vertex(a, ad1)
+    self.__set_edge_of_vertex(b, db1)
+    self.__set_edge_of_vertex(c, ca1)
+    self.__set_edge_of_vertex(d, ad1)
+
     cdef long gen = self.HE[he1].gen
     if gen>self.HE[the1].gen:
       gen = self.HE[the1].gen
@@ -605,18 +619,20 @@ cdef class Mesh3d:
     cdef double y = (self.Y[a] + self.Y[b])*0.5
     cdef double z = (self.Z[a] + self.Z[b])*0.5
 
-    cdef long e = self.__new_vertex(x,y,z)
+    cdef long v1 = self.__new_vertex(x,y,z)
 
-    cdef long de1 = self.__new_edge(d,e)
-    cdef long ec1 = self.__new_edge(e,c)
-    cdef long ed1 = self.__new_edge(e,d)
-    cdef long ce1 = self.__new_edge(c,e)
+    cdef long de1 = self.__new_edge(d,v1)
+    cdef long ec1 = self.__new_edge(v1,c)
+    cdef long ed1 = self.__new_edge(v1,d)
+    cdef long ce1 = self.__new_edge(c,v1)
 
-    cdef long be1 = self.__new_edge(b,e)
-    cdef long eb1 = self.__new_edge(e,b)
+    cdef long be1 = self.__new_edge(b,v1)
+    cdef long eb1 = self.__new_edge(v1,b)
 
-    self.HE[the1].first = e
-    self.HE[he1].last = e
+    self.__set_edge_of_vertex(v1, de1)
+
+    self.HE[the1].first = v1
+    self.HE[he1].last = v1
 
     self.__set_mutual_twins(de1,ed1)
     self.__set_mutual_twins(be1,eb1)
@@ -673,16 +689,18 @@ cdef class Mesh3d:
     cdef double y = (self.Y[a] + self.Y[b])*0.5
     cdef double z = (self.Z[a] + self.Z[b])*0.5
 
-    cdef long e = self.__new_vertex(x,y,z)
+    cdef long v1 = self.__new_vertex(x,y,z)
 
-    cdef long ec1 = self.__new_edge(e,c)
-    cdef long ce1 = self.__new_edge(c,e)
+    cdef long ec1 = self.__new_edge(v1,c)
+    cdef long ce1 = self.__new_edge(c,v1)
 
-    cdef long eb1 = self.__new_edge(e,b)
+    cdef long eb1 = self.__new_edge(v1,b)
 
-    self.HE[he1].last = e
+    self.__set_edge_of_vertex(v1,ec1)
 
-    self.__set_vertex_intensity(e, (self.I[he.first] + self.I[he.last])*0.5)
+    self.HE[he1].last = v1
+
+    self.__set_vertex_intensity(v1, (self.I[he.first] + self.I[he.last])*0.5)
 
     self.__set_mutual_twins(ce1,ec1)
 
@@ -879,6 +897,12 @@ cdef class Mesh3d:
       he2 = self.__new_edge(v2,v3)
       he3 = self.__new_edge(v3,v1)
 
+      # TODO: this does not matter?
+
+      self.__set_edge_of_vertex(v1, he1)
+      self.__set_edge_of_vertex(v2, he2)
+      self.__set_edge_of_vertex(v3, he3)
+
       # look at me doing OOP
 
       edgelen = self.__get_edge_length(he1)
@@ -960,70 +984,6 @@ cdef class Mesh3d:
   cpdef long safe_vertex_positions(self, double limit):
 
     return self.__safe_vertex_positions(limit)
-
-  @cython.wraparound(False)
-  @cython.boundscheck(False)
-  @cython.nonecheck(False)
-  cpdef list new_faces_in_ngon(self, double x1, double y1, double z1, double rad, long num):
-
-    cdef list vertices = []
-    cdef list edges = []
-    cdef list outside_edges = []
-
-    cdef double the = 0.0
-    cdef double thediff = TWOPI/num
-    cdef double x
-    cdef double y
-    cdef double z
-    cdef long f
-    cdef long i
-    cdef long first
-    cdef long last
-    cdef long first_edge
-    cdef long outside_edge
-    cdef long edge
-
-    cdef long vmid = self.__new_vertex(x1,y1,z1)
-
-    for i in xrange(num):
-
-      x = x1 + cos(the)*rad
-      y = y1 + sin(the)*rad
-      z = z1
-      vertices.append(self.__new_vertex(x,y,z))
-      the += thediff
-
-    for i in xrange(num):
-
-      first = i
-      last = i+1
-
-      if i>=num-1:
-        first = i
-        last = 0
-
-      first_edge = self.__new_edge(vmid, vertices[first])
-      outside_edge = self.__new_edge(vertices[first], vertices[last])
-      edge = self.__new_edge(vertices[last], vmid)
-
-      edges.append(first_edge)
-      edges.append(edge)
-      outside_edges.append(outside_edge)
-
-      self.__set_next_of_triangle(first_edge, outside_edge, edge)
-
-      f = self.__new_face(first_edge)
-      self.__set_face_of_three_edges(f, first_edge, edge, outside_edge)
-      self.__set_edge_of_face(f, first_edge)
-      self.__set_gen_of_three_edges(0, first_edge, edge, outside_edge)
-
-    for i in xrange(num-1):
-
-      self.__set_mutual_twins(edges[2*i+1],edges[2*i+2])
-
-    self.__set_mutual_twins(edges[0],edges[2*num-1])
-
-    return outside_edges
 
   @cython.wraparound(False)
   @cython.boundscheck(False)
