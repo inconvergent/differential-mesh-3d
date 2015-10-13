@@ -78,6 +78,8 @@ cdef class Mesh3d:
 
   cdef list __get_connected_vertices(self, long v1)
 
+  cdef list __get_adjacent_edges(self, long v1)
+
   cdef long __next_surface(self, long he1, long direction) nogil
 
   cdef long __edge_duplicate_test(self, long he1, long a, long b) nogil

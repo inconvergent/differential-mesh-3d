@@ -17,7 +17,6 @@ from libc.math cimport fabs
 
 from helpers cimport double_array_init
 from helpers cimport long_array_init
-from helpers cimport vcross
 
 import numpy as np
 cimport numpy as np
@@ -146,7 +145,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
       k4 = k*4
       nrm = dst[k4+3]
 
-      if nrm>self.farl or nrm<=0.0:
+      if nrm>self.farl or nrm<=1e-9:
         continue
 
       dx = dst[k4]/nrm
@@ -196,7 +195,9 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
       dz = self.Z[v2]-self.Z[v1]
       nrm = sqrt(dx*dx+dy*dy+dz*dz)
 
-      if nrm<0.:
+      #if nrm<0.:
+        #continue
+      if nrm<1e-9:
         continue
 
       s = stp/nrm
@@ -210,15 +211,14 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
     return 1
 
-  @cython.wraparound(False)
-  @cython.boundscheck(False)
-  @cython.nonecheck(False)
-  @cython.cdivision(True)
-  cdef long __unfold(self, double stp) nogil:
+  #@cython.wraparound(False)
+  #@cython.boundscheck(False)
+  #@cython.nonecheck(False)
+  #@cython.cdivision(True)
+  cdef long __unfold(self, long v1, double stp):
     """
     """
 
-    cdef long v1
     cdef long v2
     cdef long first
     cdef long last
@@ -251,15 +251,19 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     cdef double nrmc
     cdef double s
 
-    for k in xrange(self.henum):
+    cdef list adjacent = self.__get_adjacent_edges(v1)
+    #print(v1,self.VHE[v1],adjacent)
 
-      if self.__is_surface_edge(k)>0:
+    for k in xrange(len(adjacent)):
+
+      he1 = adjacent[k]
+
+      if self.__is_surface_edge(he1)>0:
         continue
 
-      first = self.HE[k].first
-      last = self.HE[k].last
+      first = self.HE[he1].first
+      last = self.HE[he1].last
 
-      v1 = self.HE[self.HE[k].next].last
       v2 = self.HE[self.HE[self.HE[k].twin].next].last
 
       v1x = self.X[v1]
@@ -294,17 +298,19 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
       nrm = sqrt(crossx*crossx+crossy*crossy+crossz*crossz)
       nrmc = sqrt(cx*cx+cy*cy+cz*cz)
+      #print(nrm,nrmc)
 
-      if nrm<=0.0 or nrmc<0.0:
+      if nrm<1e-9 or nrmc<1e-9:
         continue
 
       crossx /= nrm
       crossy /= nrm
       crossz /= nrm
 
+
       s = (1.0-fabs(crossx*cx/nrmc+crossy*cy/nrmc+crossz*cz/nrmc))*stp
 
-      ### reject
+      ## reject
       self.DX[v1] += crossx*s
       self.DY[v1] += crossy*s
       self.DZ[v1] += crossz*s
@@ -404,6 +410,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
           self.__reject(v, reject_stp, vertices, dst)
           self.__attract(v, attract_stp)
+          self.__unfold(v, unfold_stp)
 
         #for v in prange(self.vnum, schedule='guided'):
         for v in xrange(self.vnum):

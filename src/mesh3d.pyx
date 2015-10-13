@@ -15,13 +15,10 @@ from libc.math cimport M_PI
 
 from helpers cimport long_array_init
 from helpers cimport double_array_init
-from helpers cimport vcross
 
 import numpy as np
 cimport numpy as np
 cimport cython
-
-#cimport zonemap3d
 
 
 cdef double TWOPI = M_PI*2
@@ -415,6 +412,58 @@ cdef class Mesh3d:
             break
 
     return connected
+
+
+  @cython.wraparound(False)
+  @cython.boundscheck(False)
+  @cython.nonecheck(False)
+  cdef list __get_adjacent_edges(self, long v1):
+
+    ## TODO: dont use list
+
+    cdef long he1 = self.VHE[v1]
+    cdef long he2
+    cdef long adj
+    cdef long twin
+
+    cdef list adjacent = []
+    cdef long num = 0
+
+    ## counter clockwise / backward surface
+    twin = he1
+    while True:
+      adj = self.HE[twin].next
+      he2 = self.HE[adj].next
+      twin = self.HE[he2].twin
+
+      adjacent.append(adj)
+      num += 1
+
+      if twin == he1 or twin < 0:
+        break
+
+    if twin < 0:
+      ## we are near a surface and must do reverse test as well
+      ## clockwise / forward surface
+
+      twin = self.HE[he1].twin
+      #adjacent.append(self.HE[he1].last)
+      num += 1
+
+      if twin>-1:
+
+        while True:
+          he2 = self.HE[twin].next
+          adj = self.HE[he2].next
+          twin = self.HE[he2].twin
+
+          adjacent.append(adj)
+          num += 1
+
+          if twin == he1 or twin < 0:
+            break
+
+    return adjacent
 
   @cython.wraparound(False)
   @cython.boundscheck(False)

@@ -11,7 +11,7 @@ from modules.utils import get_surface_edges
 PROCS = 4
 
 NMAX = int(10e6)
-ITT = 100000
+ITT = 1000000000
 OPT_ITT = 1
 
 NEARL = 0.003
@@ -30,8 +30,8 @@ MOVE = [0.5]*3
 
 STP = 1.0e-7
 REJECT_STP = STP
-ATTRACT_STP = STP*0.1
-UNFOLD_STP = STP*0.01
+ATTRACT_STP = STP*0.3
+UNFOLD_STP = STP*0.1
 
 
 
@@ -88,13 +88,9 @@ def main(argv):
 
       DM.diminish_all_vertex_intensity(0.99)
 
-      # TODO: this is for testing
-      alive_vertices = list(l for l in set(get_surface_edges(DM)))
-
-      #if i%100 == 0:
-        #alive_vertices = list(l for l in set(get_surface_edges(DM)) if random()<1)
-        #alive_vertices = set(randint(DM.get_vnum(), size=DM.get_vnum()))
-      #print('number of alive vertices: {:d}'.format(len(alive_vertices)))
+      if i%100 == 0:
+        alive_vertices = list(l for l in set(get_surface_edges(DM)) if random()<0.7)
+        print('number of alive vertices: {:d}'.format(len(alive_vertices)))
 
       if len(alive_vertices)>0:
         DM.set_vertices_intensity(array([v for v in alive_vertices]), 1.0)

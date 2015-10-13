@@ -24,13 +24,11 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
   ## FUNCTIONS
 
-  #cdef long __edge_vertex_force(self, long he1, long v1, double scale) nogil
-
-  cdef long __reject(self, long v, double stp, long *vertices, double *dst) nogil
+  cdef long __reject(self, long v1, double stp, long *vertices, double *dst) nogil
 
   cdef long __attract(self, long v1, double stp)
 
-  cdef long __unfold(self, double scale) nogil
+  cdef long __unfold(self, long v1, double scale)
 
   cdef long __smooth_intensity(self, double alpha) nogil
 
