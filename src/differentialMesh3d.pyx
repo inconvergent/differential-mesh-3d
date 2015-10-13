@@ -111,16 +111,8 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.boundscheck(False)
   @cython.nonecheck(False)
   @cython.cdivision(True)
-  cdef long __reject(self, double stp) nogil:
-    """
-    all vertices will move away from all neighboring (closer than farl)
-    vertices
-    """
+  cdef long __reject(self, long v, double stp, long *vertices, double *dst) nogil:
 
-    cdef double farl = self.farl
-    cdef double nearl = self.nearl
-
-    cdef long v
     cdef long k
     cdef long k4
     cdef long neigh
@@ -134,65 +126,50 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     cdef double nrm
     cdef double s
 
-    cdef double resx
-    cdef double resy
-    cdef double resz
+    cdef long neighbor_num = self.zonemap.__sphere_vertices_dst(
+      self.X[v],
+      self.Y[v],
+      self.Z[v],
+      self.farl,
+      vertices,
+      dst
+    )
 
-    cdef long asize = self.zonemap.__get_max_sphere_count()
-    cdef long *vertices
-    cdef double *dst
-    cdef long neighbor_num
+    cdef double resx = 0.0
+    cdef double resy = 0.0
+    cdef double resz = 0.0
 
-    with nogil, parallel(num_threads=self.procs):
+    for k in range(neighbor_num):
 
-      vertices = <long *>malloc(asize*sizeof(long))
-      dst = <double *>malloc(asize*sizeof(double)*4)
-      for v in prange(self.vnum, schedule='guided'):
+      neigh = vertices[k]
 
-        x = self.X[v]
-        y = self.Y[v]
-        z = self.Z[v]
-        #neighbor_num = self.zonemap.__sphere_vertices(x, y, z, farl, vertices)
-        neighbor_num = self.zonemap.__sphere_vertices_dst(x, y, z, farl, vertices, dst)
+      if neigh == v:
+        continue
 
-        resx = 0.0
-        resy = 0.0
-        resz = 0.0
+      k4 = k*4
+      nrm = dst[k4+3]
 
-        for k in range(neighbor_num):
+      if nrm>self.farl or nrm<=0.0:
+        continue
 
-          neigh = vertices[k]
+      dx = dst[k4]/nrm
+      dy = dst[k4+1]/nrm
+      dz = dst[k4+2]/nrm
 
-          if neigh == v:
-            continue
+      s = self.farl-nrm
 
-          k4 = k*4
-          nrm = dst[k4+3]
+      if nrm<self.nearl:
+        s *= 2.0
 
-          if nrm>farl or nrm<=0.0:
-            continue
+      resx += dx*s
+      resy += dy*s
+      resz += dz*s
 
-          dx = dst[k4]/nrm
-          dy = dst[k4+1]/nrm
-          dz = dst[k4+2]/nrm
+    self.DX[v] += resx*stp
+    self.DY[v] += resy*stp
+    self.DZ[v] += resz*stp
 
-          s = farl-nrm
-
-          if nrm<nearl:
-            s *= 2.0
-
-          resx += dx*s
-          resy += dy*s
-          resz += dz*s
-
-        self.DX[v] += resx*stp
-        self.DY[v] += resy*stp
-        self.DZ[v] += resz*stp
-
-      free(vertices)
-      free(dst)
-
-    return 1
+    return neighbor_num
 
 
   @cython.wraparound(False)
@@ -460,7 +437,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
     cdef long v
     cdef long i
-    cdef long free
+    cdef long is_free
 
     cdef double intensity = 1.0
 
@@ -475,26 +452,28 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
     cdef long blocked = 0
 
+    cdef long *vertices
+    cdef double *dst
+
+    cdef long asize
+
     for i in xrange(itt):
 
       double_array_init(self.DX, self.vnum, 0.)
       double_array_init(self.DY, self.vnum, 0.)
       double_array_init(self.DZ, self.vnum, 0.)
 
-      if reject_stp>0.0:
-        self.__reject(reject_stp)
-
-      if triangle_stp>0.0:
-        self.__triangle_force(triangle_stp)
-
-      if attract_stp>0.0:
-        self.__attract(attract_stp)
-
-      if unfold_stp>0.0:
-        self.__unfold(unfold_stp)
+      asize = self.zonemap.__get_max_sphere_count()
 
       with nogil, parallel(num_threads=self.procs):
-      #if True:
+
+        vertices = <long *>malloc(asize*sizeof(long))
+        dst = <double *>malloc(asize*sizeof(double)*4)
+
+        for v in prange(self.vnum, schedule='guided'):
+
+          self.__reject(v, reject_stp, vertices, dst)
+
 
         for v in prange(self.vnum, schedule='guided'):
         #for v in xrange(self.vnum):
@@ -519,11 +498,14 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
             y = self.Y[v] + self.DY[v]
             z = self.Z[v] + self.DZ[v]
 
-          #free = self.zonemap.__sphere_is_free_ignore(x, y, z, v, stp_limit)
-          #if free>0:
+          #is_free = self.zonemap.__sphere_is_free_ignore(x, y, z, v, stp_limit)
+          #if is_free>0:
           self.X[v] = x
           self.Y[v] = y
           self.Z[v] = z
+
+        free(vertices)
+        free(dst)
 
     return blocked
 
