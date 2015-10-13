@@ -399,21 +399,24 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
       asize = self.zonemap.__get_max_sphere_count()
 
       with nogil, parallel(num_threads=self.procs):
-      #if True:
 
         vertices = <long *>malloc(asize*sizeof(long))
-        tmp = <long *>malloc(20*sizeof(long))
+        tmp = <long *>malloc(10*sizeof(long))
         dst = <double *>malloc(asize*sizeof(double)*4)
 
         for v in prange(self.vnum, schedule='guided'):
-        #for v in xrange(self.vnum):
 
           self.__reject(v, reject_stp, vertices, dst)
           self.__attract(v, attract_stp, tmp)
           self.__unfold(v, unfold_stp, tmp)
 
+        free(vertices)
+        free(tmp)
+        free(dst)
+
+      with nogil, parallel(num_threads=self.procs):
+
         for v in prange(self.vnum, schedule='guided'):
-        #for v in xrange(self.vnum):
 
           dx = self.DX[v]
           dy = self.DY[v]
@@ -439,8 +442,6 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
           self.Y[v] = y
           self.Z[v] = z
 
-        free(vertices)
-        free(dst)
 
     return 1
 
