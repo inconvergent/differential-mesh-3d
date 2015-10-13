@@ -117,14 +117,15 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     cdef long k4
     cdef long neigh
 
-    cdef double x
-    cdef double y
-    cdef double z
     cdef double dx
     cdef double dy
     cdef double dz
     cdef double nrm
     cdef double s
+
+    cdef double resx = 0.0
+    cdef double resy = 0.0
+    cdef double resz = 0.0
 
     cdef long neighbor_num = self.zonemap.__sphere_vertices_dst(
       self.X[v],
@@ -134,10 +135,6 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
       vertices,
       dst
     )
-
-    cdef double resx = 0.0
-    cdef double resy = 0.0
-    cdef double resz = 0.0
 
     for k in range(neighbor_num):
 
@@ -176,17 +173,10 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.boundscheck(False)
   @cython.nonecheck(False)
   @cython.cdivision(True)
-  cdef long __attract(self, double stp) nogil:
-    """
-    vertices will move towards all connected vertices further away than
-    nearl
-    """
+  cdef long __attract(self, long v1, double stp):
 
-    cdef long v1
     cdef long v2
     cdef long k
-
-    cdef double nearl = self.nearl
 
     cdef double dx
     cdef double dy
@@ -195,10 +185,11 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
     cdef double s
 
-    for k in xrange(self.henum):
+    cdef list connected = self.__get_connected_vertices(v1)
 
-      v1 = self.HE[k].first
-      v2 = self.HE[k].last
+    for k in xrange(len(connected)):
+
+      v2 = connected[k]
 
       dx = self.X[v2]-self.X[v1]
       dy = self.Y[v2]-self.Y[v1]
@@ -208,52 +199,14 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
       if nrm<0.:
         continue
 
-      if self.HE[k].twin>-1:
+      s = stp/nrm
 
-        # internal edge. has two opposing half edges
-        # half the force because it is applied twice
-        s = stp*0.5/nrm
+      if nrm>self.nearl:
 
-        if nrm>nearl:
-
-          ## attract
-          self.DX[v1] += dx*s
-          self.DY[v1] += dy*s
-          self.DZ[v1] += dz*s
-
-        elif nrm<=nearl:
-
-          ## reject
-          self.DX[v1] -= dx*s
-          self.DY[v1] -= dy*s
-          self.DZ[v1] -= dz*s
-
-      else:
-
-        # surface edge has one half edge, and they are all rotated the same way
-        s = stp/nrm
-
-        if nrm>nearl:
-
-          ## attract
-          self.DX[v1] += dx*s
-          self.DY[v1] += dy*s
-          self.DZ[v1] += dz*s
-          # and the other vertex
-          self.DX[v2] -= dx*s
-          self.DY[v2] -= dy*s
-          self.DZ[v2] -= dz*s
-
-        elif nrm<=nearl:
-
-          ## reject
-          self.DX[v1] -= dx*s
-          self.DY[v1] -= dy*s
-          self.DZ[v1] -= dz*s
-          # and the other vertex
-          self.DX[v2] += dx*s
-          self.DY[v2] += dy*s
-          self.DZ[v2] += dz*s
+        ### attract
+        self.DX[v1] += dx*s
+        self.DY[v1] += dy*s
+        self.DZ[v1] += dz*s
 
     return 1
 
@@ -450,8 +403,6 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     cdef double nrm
     cdef double stp_limit = self.nearl*0.3
 
-    cdef long blocked = 0
-
     cdef long *vertices
     cdef double *dst
 
@@ -465,18 +416,20 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
       asize = self.zonemap.__get_max_sphere_count()
 
-      with nogil, parallel(num_threads=self.procs):
+      #with nogil, parallel(num_threads=self.procs):
+      if True:
 
         vertices = <long *>malloc(asize*sizeof(long))
         dst = <double *>malloc(asize*sizeof(double)*4)
 
-        for v in prange(self.vnum, schedule='guided'):
+        #for v in prange(self.vnum, schedule='guided'):
+        for v in xrange(self.vnum):
 
           self.__reject(v, reject_stp, vertices, dst)
+          self.__attract(v, attract_stp)
 
-
-        for v in prange(self.vnum, schedule='guided'):
-        #for v in xrange(self.vnum):
+        #for v in prange(self.vnum, schedule='guided'):
+        for v in xrange(self.vnum):
 
           dx = self.DX[v]
           dy = self.DY[v]
@@ -498,8 +451,6 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
             y = self.Y[v] + self.DY[v]
             z = self.Z[v] + self.DZ[v]
 
-          #is_free = self.zonemap.__sphere_is_free_ignore(x, y, z, v, stp_limit)
-          #if is_free>0:
           self.X[v] = x
           self.Y[v] = y
           self.Z[v] = z
@@ -507,7 +458,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
         free(vertices)
         free(dst)
 
-    return blocked
+    return 1
 
   @cython.wraparound(False)
   @cython.boundscheck(False)

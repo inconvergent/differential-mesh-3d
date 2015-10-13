@@ -11,7 +11,7 @@ from modules.utils import get_surface_edges
 PROCS = 4
 
 NMAX = int(10e6)
-ITT = int(10e9)
+ITT = 100000
 OPT_ITT = 1
 
 NEARL = 0.003
@@ -28,11 +28,10 @@ SCALE = [0.009]*3
 MOVE = [0.5]*3
 
 
-#STP = 1.0e-6
 STP = 1.0e-7
-REJECT_STP = STP*1.0
+REJECT_STP = STP
 TRIANGLE_STP = STP*0.1
-ATTRACT_STP = STP*0.2
+ATTRACT_STP = STP*0.1
 UNFOLD_STP = STP*0.01
 COHESION_STP = STP*0.
 
@@ -66,10 +65,7 @@ def main(argv):
   noise = random_unit_vec(DM.get_vnum(), STP*1000.)
   DM.position_noise(noise, scale_intensity=-1)
 
-  #alive_vertices = set(randint(DM.get_vnum(), size=DM.get_vnum()))
-  alive_vertices = list(l for l in set(get_surface_edges(DM)) if random()<1)
-
-  print(alive_vertices)
+  alive_vertices = list(l for l in set(get_surface_edges(DM)))
 
   DM.optimize_edges(H, FLIP_LIMIT)
 
@@ -92,15 +88,17 @@ def main(argv):
         scale_intensity=1
       )
 
-      if i%10 == 0:
-        DM.optimize_edges(H, FLIP_LIMIT)
+      DM.optimize_edges(H, FLIP_LIMIT)
 
       DM.diminish_all_vertex_intensity(0.99)
 
-      if i%100 == 0:
-        alive_vertices = list(l for l in set(get_surface_edges(DM)) if random()<1)
+      # TODO: this is for testing
+      alive_vertices = list(l for l in set(get_surface_edges(DM)))
+
+      #if i%100 == 0:
+        #alive_vertices = list(l for l in set(get_surface_edges(DM)) if random()<1)
         #alive_vertices = set(randint(DM.get_vnum(), size=DM.get_vnum()))
-        print('number of alive vertices: {:d}'.format(len(alive_vertices)))
+      #print('number of alive vertices: {:d}'.format(len(alive_vertices)))
 
       if len(alive_vertices)>0:
         DM.set_vertices_intensity(array([v for v in alive_vertices]), 1.0)

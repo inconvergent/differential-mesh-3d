@@ -30,7 +30,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
   cdef long __reject(self, long v, double stp, long *vertices, double *dst) nogil
 
-  cdef long __attract(self, double scale) nogil
+  cdef long __attract(self, long v1, double stp)
 
   cdef long __unfold(self, double scale) nogil
 

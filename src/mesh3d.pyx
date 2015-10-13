@@ -370,6 +370,55 @@ cdef class Mesh3d:
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
+  cdef list __get_connected_vertices(self, long v1):
+
+    ## TODO: dont use list
+
+    cdef long he1 = self.VHE[v1]
+    cdef long he2
+    cdef long twin
+
+    cdef list connected = []
+    cdef long num = 0
+
+    ## counter clockwise / backward surface
+    twin = he1
+    while True:
+
+      he2 = self.HE[self.HE[twin].next].next
+      twin = self.HE[he2].twin
+
+      connected.append(self.HE[he2].first)
+      num += 1
+
+      if twin == he1 or twin < 0:
+        break
+
+    if twin < 0:
+      ## we are near a surface and must do reverse test as well
+      ## clockwise / forward surface
+
+      twin = self.HE[he1].twin
+      connected.append(self.HE[he1].last)
+      num += 1
+
+      if twin>-1:
+
+        while True:
+          he2 = self.HE[twin].next
+          twin = self.HE[he2].twin
+
+          connected.append(self.HE[he2].last)
+          num += 1
+
+          if twin == he1 or twin < 0:
+            break
+
+    return connected
+
+  @cython.wraparound(False)
+  @cython.boundscheck(False)
+  @cython.nonecheck(False)
   cdef long __next_surface(self, long he1, long direction) nogil:
 
     cdef long he2 = -1000
@@ -540,9 +589,9 @@ cdef class Mesh3d:
     self.__set_face_of_three_edges(f2, the1, ca1, ad1)
 
     self.__set_edge_of_vertex(a, ad1)
-    self.__set_edge_of_vertex(b, db1)
+    self.__set_edge_of_vertex(b, bc1)
     self.__set_edge_of_vertex(c, ca1)
-    self.__set_edge_of_vertex(d, ad1)
+    self.__set_edge_of_vertex(d, db1)
 
     cdef long gen = self.HE[he1].gen
     if gen>self.HE[the1].gen:
@@ -629,7 +678,7 @@ cdef class Mesh3d:
     cdef long be1 = self.__new_edge(b,v1)
     cdef long eb1 = self.__new_edge(v1,b)
 
-    self.__set_edge_of_vertex(v1, de1)
+    self.__set_edge_of_vertex(v1, ec1)
 
     self.HE[the1].first = v1
     self.HE[he1].last = v1
