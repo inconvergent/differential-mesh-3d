@@ -5,6 +5,7 @@ class Obj(object):
 
   def __init__(self, fn, obj_name):
 
+    self.fn = fn
     self.obj_name = obj_name
     self.obj = self.__import(fn)
 
@@ -23,6 +24,73 @@ class Obj(object):
     obj = bpy.context.selected_objects[0]
 
     return obj
+
+  def get_vertex_color(self):
+
+    from numpy import row_stack
+    from mathutils import Color
+
+    colors = []
+
+    try:
+
+      with open(self.fn+'.x', 'r', encoding='utf8') as f:
+
+        for l in f:
+          if l.startswith('#'):
+            continue
+
+          values = l.split()
+          if not values:
+            continue
+
+          if values[0] == 'c':
+            c = [float(v) for v in values[1:]]
+            colors.append(c)
+
+    except FileNotFoundError:
+      return
+
+    mesh = self.obj.data
+
+    if not mesh.vertex_colors:
+      mesh.vertex_colors.new()
+
+    #print(mesh.vertex_colors)
+    col = mesh.vertex_colors.active
+
+    print(col)
+
+
+
+    num = len(colors)
+
+    numv = len(self.obj.data.polygons)
+
+    #for i,c in enumerate(colors):
+
+      #col.data[i].color = c
+
+    i = 0
+
+    print(Color(([0.1,0.1,0.1])))
+
+    for poly in self.obj.data.polygons:
+      loop = poly.loop_indices
+      verts = poly.vertices
+      #print([v for v in poly.loop_indices])
+      #print([v for v in poly.vertices])
+      for idx,v in zip(loop,verts):
+        col.data[idx].color = Color(colors[v])
+        i += 1
+
+    print(num, numv, len(col.data), i)
+
+    #for i,(rgb) in enumerate(row_stack(colors)):
+      #col.data[i].color = [float(i)/num]*3
+
+    #print(colors)
+
 
   def move_rescale(self, pos, scale):
 
@@ -102,7 +170,8 @@ def main(argv):
 
     t1 = time()
 
-    O = Obj(fn,'a')
+    O = Obj(fn, 'a')
+    O.get_vertex_color()
     O.smooth(1)
     O.move_rescale([-0.5]*3, 100)
     O.animate_vis(count, count+1)

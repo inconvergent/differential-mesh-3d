@@ -67,7 +67,7 @@ def main(argv):
   DM.position_noise(noise, scale_intensity=-1)
 
   #alive_vertices = set(randint(DM.get_vnum(), size=DM.get_vnum()))
-  alive_vertices = list(l for l in set(get_surface_edges(DM)) if random()<0.5)
+  alive_vertices = list(l for l in set(get_surface_edges(DM)) if random()<1)
 
   print(alive_vertices)
 
@@ -98,7 +98,7 @@ def main(argv):
       DM.diminish_all_vertex_intensity(0.99)
 
       if i%100 == 0:
-        alive_vertices = list(l for l in set(get_surface_edges(DM)) if random()<0.7)
+        alive_vertices = list(l for l in set(get_surface_edges(DM)) if random()<1)
         #alive_vertices = set(randint(DM.get_vnum(), size=DM.get_vnum()))
         print('number of alive vertices: {:d}'.format(len(alive_vertices)))
 
