@@ -148,11 +148,11 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
       if nrm>self.farl or nrm<=1e-9:
         continue
 
-      dx = dst[k4]/nrm
-      dy = dst[k4+1]/nrm
-      dz = dst[k4+2]/nrm
+      dx = dst[k4]
+      dy = dst[k4+1]
+      dz = dst[k4+2]
 
-      s = self.farl-nrm
+      s = self.farl/nrm-1.0
 
       if nrm<self.nearl:
         s *= 2.0
