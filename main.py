@@ -30,10 +30,8 @@ MOVE = [0.5]*3
 
 STP = 1.0e-7
 REJECT_STP = STP
-TRIANGLE_STP = STP*0.1
 ATTRACT_STP = STP*0.1
 UNFOLD_STP = STP*0.01
-COHESION_STP = STP*0.
 
 
 
@@ -80,10 +78,8 @@ def main(argv):
 
       DM.optimize_position(
         REJECT_STP,
-        TRIANGLE_STP,
         ATTRACT_STP,
         UNFOLD_STP,
-        COHESION_STP,
         OPT_ITT,
         scale_intensity=1
       )

@@ -24,9 +24,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
   ## FUNCTIONS
 
-  cdef long __edge_vertex_force(self, long he1, long v1, double scale) nogil
-
-  cdef long __triangle_force(self, double scale) nogil
+  #cdef long __edge_vertex_force(self, long he1, long v1, double scale) nogil
 
   cdef long __reject(self, long v, double stp, long *vertices, double *dst) nogil
 
@@ -49,10 +47,8 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   cpdef long optimize_position(
     self,
     double reject_stp,
-    double triangle_stp,
     double attract_stp,
     double unfold_stp,
-    double cohesion_stp,
     long itt,
     long scale_intensity
   )
