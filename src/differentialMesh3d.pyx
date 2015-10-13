@@ -172,7 +172,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.boundscheck(False)
   @cython.nonecheck(False)
   @cython.cdivision(True)
-  cdef long __attract(self, long v1, double stp):
+  cdef long __attract(self, long v1, double stp, long *tmp) nogil:
 
     cdef long v2
     cdef long k
@@ -184,11 +184,11 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
     cdef double s
 
-    cdef list connected = self.__get_connected_vertices(v1)
+    cdef long num_connected = self.__get_connected_vertices(v1, tmp)
 
-    for k in xrange(len(connected)):
+    for k in xrange(num_connected):
 
-      v2 = connected[k]
+      v2 = tmp[k]
 
       dx = self.X[v2]-self.X[v1]
       dy = self.Y[v2]-self.Y[v1]
@@ -211,13 +211,11 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
     return 1
 
-  #@cython.wraparound(False)
-  #@cython.boundscheck(False)
-  #@cython.nonecheck(False)
-  #@cython.cdivision(True)
-  cdef long __unfold(self, long v1, double stp):
-    """
-    """
+  @cython.wraparound(False)
+  @cython.boundscheck(False)
+  @cython.nonecheck(False)
+  @cython.cdivision(True)
+  cdef long __unfold(self, long v1, double stp, long *tmp) nogil:
 
     cdef long v2
     cdef long first
@@ -251,12 +249,12 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     cdef double nrmc
     cdef double s
 
-    cdef list adjacent = self.__get_adjacent_edges(v1)
+    cdef long num_adjacent = self.__get_adjacent_edges(v1, tmp)
     #print(v1,self.VHE[v1],adjacent)
 
-    for k in xrange(len(adjacent)):
+    for k in xrange(num_adjacent):
 
-      he1 = adjacent[k]
+      he1 = tmp[k]
 
       if self.__is_surface_edge(he1)>0:
         continue
@@ -387,6 +385,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     cdef double stp_limit = self.nearl*0.3
 
     cdef long *vertices
+    cdef long *tmp
     cdef double *dst
 
     cdef long asize
@@ -399,21 +398,22 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
       asize = self.zonemap.__get_max_sphere_count()
 
-      #with nogil, parallel(num_threads=self.procs):
-      if True:
+      with nogil, parallel(num_threads=self.procs):
+      #if True:
 
         vertices = <long *>malloc(asize*sizeof(long))
+        tmp = <long *>malloc(20*sizeof(long))
         dst = <double *>malloc(asize*sizeof(double)*4)
 
-        #for v in prange(self.vnum, schedule='guided'):
-        for v in xrange(self.vnum):
+        for v in prange(self.vnum, schedule='guided'):
+        #for v in xrange(self.vnum):
 
           self.__reject(v, reject_stp, vertices, dst)
-          self.__attract(v, attract_stp)
-          self.__unfold(v, unfold_stp)
+          self.__attract(v, attract_stp, tmp)
+          self.__unfold(v, unfold_stp, tmp)
 
-        #for v in prange(self.vnum, schedule='guided'):
-        for v in xrange(self.vnum):
+        for v in prange(self.vnum, schedule='guided'):
+        #for v in xrange(self.vnum):
 
           dx = self.DX[v]
           dy = self.DY[v]

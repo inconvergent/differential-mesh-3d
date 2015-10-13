@@ -26,9 +26,9 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
   cdef long __reject(self, long v1, double stp, long *vertices, double *dst) nogil
 
-  cdef long __attract(self, long v1, double stp)
+  cdef long __attract(self, long v1, double stp, long *tmp) nogil
 
-  cdef long __unfold(self, long v1, double scale)
+  cdef long __unfold(self, long v1, double scale, long *tmp) nogil
 
   cdef long __smooth_intensity(self, double alpha) nogil
 

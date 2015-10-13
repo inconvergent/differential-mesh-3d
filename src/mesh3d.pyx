@@ -367,7 +367,7 @@ cdef class Mesh3d:
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cdef list __get_connected_vertices(self, long v1):
+  cdef long __get_connected_vertices(self, long v1, long *tmp) nogil:
 
     ## TODO: dont use list
 
@@ -375,7 +375,7 @@ cdef class Mesh3d:
     cdef long he2
     cdef long twin
 
-    cdef list connected = []
+    #cdef list connected = []
     cdef long num = 0
 
     ## counter clockwise / backward surface
@@ -385,7 +385,8 @@ cdef class Mesh3d:
       he2 = self.HE[self.HE[twin].next].next
       twin = self.HE[he2].twin
 
-      connected.append(self.HE[he2].first)
+      #connected.append(self.HE[he2].first)
+      tmp[num] = self.HE[he2].first
       num += 1
 
       if twin == he1 or twin < 0:
@@ -396,7 +397,8 @@ cdef class Mesh3d:
       ## clockwise / forward surface
 
       twin = self.HE[he1].twin
-      connected.append(self.HE[he1].last)
+      #connected.append(self.HE[he1].last)
+      tmp[num] = self.HE[he1].last
       num += 1
 
       if twin>-1:
@@ -405,19 +407,20 @@ cdef class Mesh3d:
           he2 = self.HE[twin].next
           twin = self.HE[he2].twin
 
-          connected.append(self.HE[he2].last)
+          #connected.append(self.HE[he2].last)
+          tmp[num] = self.HE[he2].last
           num += 1
 
           if twin == he1 or twin < 0:
             break
 
-    return connected
+    return num
 
 
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cdef list __get_adjacent_edges(self, long v1):
+  cdef long __get_adjacent_edges(self, long v1, long *tmp) nogil:
 
     ## TODO: dont use list
 
@@ -426,7 +429,7 @@ cdef class Mesh3d:
     cdef long adj
     cdef long twin
 
-    cdef list adjacent = []
+    #cdef list adjacent = []
     cdef long num = 0
 
     ## counter clockwise / backward surface
@@ -436,7 +439,8 @@ cdef class Mesh3d:
       he2 = self.HE[adj].next
       twin = self.HE[he2].twin
 
-      adjacent.append(adj)
+      #adjacent.append(adj)
+      tmp[num] = adj
       num += 1
 
       if twin == he1 or twin < 0:
@@ -447,7 +451,6 @@ cdef class Mesh3d:
       ## clockwise / forward surface
 
       twin = self.HE[he1].twin
-      #adjacent.append(self.HE[he1].last)
       num += 1
 
       if twin>-1:
@@ -457,13 +460,14 @@ cdef class Mesh3d:
           adj = self.HE[he2].next
           twin = self.HE[he2].twin
 
-          adjacent.append(adj)
+          #adjacent.append(adj)
+          tmp[num] = adj
           num += 1
 
           if twin == he1 or twin < 0:
             break
 
-    return adjacent
+    return num
 
   @cython.wraparound(False)
   @cython.boundscheck(False)

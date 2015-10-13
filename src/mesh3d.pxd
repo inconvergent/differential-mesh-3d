@@ -76,9 +76,9 @@ cdef class Mesh3d:
 
   cdef long __is_surface_edge(self, long he1) nogil
 
-  cdef list __get_connected_vertices(self, long v1)
+  cdef long __get_connected_vertices(self, long v1, long *tmp) nogil
 
-  cdef list __get_adjacent_edges(self, long v1)
+  cdef long __get_adjacent_edges(self, long v1, long *tmp) nogil
 
   cdef long __next_surface(self, long he1, long direction) nogil
 
