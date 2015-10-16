@@ -7,13 +7,45 @@ name="$1"
 
 if [ -z "$name" ]
 then
-  name=res
+  name="./res/res"
 fi
 echo "running simulation using name: $name."
 
+rm -f "$name"*.obj
+rm -f "$name"*.x
 
-rm -f ./res/"$name"*.obj
-rm -f ./res/"$name"*.x
 
-python main.py --fn $name --procs 6
+python main.py \
+  --out "$name" \
+  --procs 6 \
+  --stp 1.0e-7 \
+  --attract 0.3 \
+  --reject 1.0 \
+  --unfold 0.1 \
+  --stat 1000 \
+  --obj ./data/base.obj
+
+
+#usage: main.py [-h] [--obj OBJ] [--procs PROCS] [--profile PROFILE]
+               #[--nearl NEARL] [--farl FARL] [--stp STP] [--reject REJECT]
+               #[--attract ATTRACT] [--unfold UNFOLD] [--nmax NMAX] [--itt ITT]
+               #[--stat STAT] [--export EXPORT] [--out OUT] [--scale SCALE]
+
+#optional arguments:
+  #-h, --help         show this help message and exit
+  #--obj OBJ
+  #--procs PROCS      number of processors.
+  #--profile PROFILE  run in profiler mode?
+  #--nearl NEARL
+  #--farl FARL
+  #--stp STP
+  #--reject REJECT
+  #--attract ATTRACT
+  #--unfold UNFOLD
+  #--nmax NMAX
+  #--itt ITT
+  #--stat STAT
+  #--export EXPORT
+  #--out OUT
+  #--scale SCALE
 
