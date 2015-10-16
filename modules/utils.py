@@ -123,8 +123,6 @@ def export_obj(dm, obj_name, fn, write_intensity=False):
       t += 1
       f.write('f {:d} {:d} {:d}\n'.format(*t))
 
-    print()
-
   if write_intensity:
 
     with open(fn+'.x', 'wb', encoding='utf8') as f:
