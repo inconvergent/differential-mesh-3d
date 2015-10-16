@@ -56,6 +56,16 @@ def get_args():
     default=0.1
   )
   parser.add_argument(
+    '--diminish',
+    type=float,
+    default=0.99
+  )
+  parser.add_argument(
+    '--smooth',
+    type=float,
+    default=0.08
+  )
+  parser.add_argument(
     '--nmax',
     type=int,
     default=1000000

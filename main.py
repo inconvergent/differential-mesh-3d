@@ -17,12 +17,18 @@ def main(args):
   from differentialMesh3d import DifferentialMesh3d
   from time import time
   from modules.helpers import print_stats
-  from numpy import unique
   from numpy import array
   from numpy.random import random
-  from numpy.random import randint
 
 
+  reject = args.reject*args.stp
+  attract = args.attract*args.stp
+  unfold = args.unfold*args.stp
+  diminish = args.diminish
+  smooth = args.smooth
+  stat = args.stat
+  export = args.export
+  out = args.out
   h = args.nearl*1.2
   flip_limit = args.nearl*1.2
 
@@ -40,7 +46,7 @@ def main(args):
   noise = random_unit_vec(DM.get_vnum(), args.stp*1000.)
   DM.position_noise(noise, scale_intensity=-1)
 
-  alive_vertices = list(l for l in set(get_surface_edges(DM)))
+  alive_vertices = get_surface_edges(DM)
 
   DM.optimize_edges(h, flip_limit)
 
@@ -53,32 +59,26 @@ def main(args):
 
       t1 = time()
 
-      DM.optimize_position(
-        args.reject*args.stp,
-        args.attract*args.stp,
-        args.unfold*args.stp,
-        OPT_ITT,
-        scale_intensity=1
-      )
+      DM.optimize_position(reject, attract, unfold, OPT_ITT, scale_intensity=1)
 
       DM.optimize_edges(h, flip_limit)
 
-      DM.diminish_all_vertex_intensity(0.99)
+      DM.diminish_all_vertex_intensity(diminish)
 
       if i%100 == 0:
-        alive_vertices = list(l for l in set(get_surface_edges(DM)) if random()<0.7)
+        alive_vertices = [l for l in get_surface_edges(DM) if random()<0.7]
         print('number of alive vertices: {:d}'.format(len(alive_vertices)))
 
       if len(alive_vertices)>0:
-        DM.set_vertices_intensity(array([v for v in alive_vertices]), 1.0)
+        DM.set_vertices_intensity(array(alive_vertices), 1.0)
 
-      DM.smooth_intensity(0.08)
+      DM.smooth_intensity(smooth)
 
-      if i%args.stat==0:
+      if i%stat==0:
         print_stats(i, time()-t1, DM)
 
-      if i%args.export==0:
-        fn = '{:s}_{:08d}.obj'.format(args.out, i)
+      if i%export==0:
+        fn = '{:s}_{:08d}.obj'.format(out, i)
         export_obj(DM, 'thing_mesh', fn, write_intensity=False)
 
     except KeyboardInterrupt:
