@@ -401,17 +401,15 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
       with nogil, parallel(num_threads=self.procs):
 
         vertices = <long *>malloc(asize*sizeof(long))
-        tmp = <long *>malloc(10*sizeof(long))
         dst = <double *>malloc(asize*sizeof(double)*4)
 
         for v in prange(self.vnum, schedule='guided'):
 
           self.__reject(v, reject_stp, vertices, dst)
-          self.__attract(v, attract_stp, tmp)
-          self.__unfold(v, unfold_stp, tmp)
+          self.__attract(v, attract_stp, vertices)
+          self.__unfold(v, unfold_stp, vertices)
 
         free(vertices)
-        free(tmp)
         free(dst)
 
       with nogil, parallel(num_threads=self.procs):
