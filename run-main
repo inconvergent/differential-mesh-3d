@@ -15,5 +15,5 @@ echo "running simulation using name: $name."
 rm -f ./res/"$name"*.obj
 rm -f ./res/"$name"*.x
 
-python main.py "$name"
+python main.py --fn $name --procs 6
 

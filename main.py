@@ -8,34 +8,11 @@ from modules.utils import load_obj
 from modules.utils import random_unit_vec
 from modules.utils import get_surface_edges
 
-PROCS = 4
-
-NMAX = int(10e6)
-ITT = 1000000000
 OPT_ITT = 1
-
-NEARL = 0.003
-H = NEARL*1.2
-
-FARL = 0.03
-
-FLIP_LIMIT = NEARL*0.5
-
-EXPORT_ITT = 1000
-STAT_ITT = 100
-
-SCALE = [0.009]*3
 MOVE = [0.5]*3
 
 
-STP = 1.0e-7
-REJECT_STP = STP
-ATTRACT_STP = STP*0.3
-UNFOLD_STP = STP*0.1
-
-
-
-def main(argv):
+def main(args):
 
   from differentialMesh3d import DifferentialMesh3d
   from time import time
@@ -45,46 +22,46 @@ def main(argv):
   from numpy.random import random
   from numpy.random import randint
 
-  name = argv[0]
-  fn_obj = './data/base.obj'
-  fn_out = './res/{:s}'.format(name)
 
-  DM = DifferentialMesh3d(NMAX, FARL, NEARL, FARL, PROCS)
+  h = args.nearl*1.2
+  flip_limit = args.nearl*1.2
+
+  DM = DifferentialMesh3d(args.nmax, args.farl, args.nearl, args.farl, args.procs)
 
   data = load_obj(
-    fn_obj,
-    sx = SCALE,
+    args.obj,
+    sx = [args.scale]*3,
     mx = MOVE
   )
   info = DM.initiate_faces(data['vertices'], data['faces'])
-  if info['minedge']<NEARL:
+  if info['minedge']<args.nearl:
     return
 
-  noise = random_unit_vec(DM.get_vnum(), STP*1000.)
+  noise = random_unit_vec(DM.get_vnum(), args.stp*1000.)
   DM.position_noise(noise, scale_intensity=-1)
 
   alive_vertices = list(l for l in set(get_surface_edges(DM)))
 
-  DM.optimize_edges(H, FLIP_LIMIT)
+  DM.optimize_edges(h, flip_limit)
 
   for he in xrange(DM.get_henum()):
     DM.set_edge_intensity(he, 1.0)
 
-  for i in xrange(ITT):
+  for i in xrange(args.itt):
 
     try:
 
       t1 = time()
 
       DM.optimize_position(
-        REJECT_STP,
-        ATTRACT_STP,
-        UNFOLD_STP,
+        args.reject*args.stp,
+        args.attract*args.stp,
+        args.unfold*args.stp,
         OPT_ITT,
         scale_intensity=1
       )
 
-      DM.optimize_edges(H, FLIP_LIMIT)
+      DM.optimize_edges(h, flip_limit)
 
       DM.diminish_all_vertex_intensity(0.99)
 
@@ -97,11 +74,11 @@ def main(argv):
 
       DM.smooth_intensity(0.08)
 
-      if i%STAT_ITT==0:
+      if i%args.stat==0:
         print_stats(i, time()-t1, DM)
 
-      if i%EXPORT_ITT==0:
-        fn = '{:s}_{:08d}.obj'.format(fn_out, i)
+      if i%args.export==0:
+        fn = '{:s}_{:08d}.obj'.format(args.out, i)
         export_obj(DM, 'thing_mesh', fn, write_intensity=False)
 
     except KeyboardInterrupt:
@@ -111,19 +88,19 @@ def main(argv):
 
 if __name__ == '__main__' :
 
-  import sys
+  from modules.helpers import get_args
 
-  argv = sys.argv
+  args = get_args()
+  print(args)
 
-  if False:
+  if args.profile:
 
     import pstats, cProfile
-    fn = './profile/profile'
-    cProfile.run('main(argv[1:])',fn)
-    p = pstats.Stats(fn)
+    cProfile.run('main(args)','./profile/profile')
+    p = pstats.Stats('./profile/profile')
     p.strip_dirs().sort_stats('cumulative').print_stats()
 
   else:
 
-    main(argv[1:])
+    main(args)
 
