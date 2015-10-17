@@ -29,7 +29,7 @@ def main(args):
   stat = args.stat
   export = args.export
   out = args.out
-  h = args.nearl*1.2
+  split_limit = args.nearl*1.2
   flip_limit = args.nearl*1.2
 
   DM = DifferentialMesh3d(args.nmax, args.farl, args.nearl, args.farl, args.procs)
@@ -48,7 +48,9 @@ def main(args):
 
   alive_vertices = get_surface_edges(DM)
 
-  DM.optimize_edges(h, flip_limit)
+  print_stats(-2, 0.0, DM)
+  DM.optimize_edges(split_limit, flip_limit)
+  print_stats(-1, 0.0, DM)
 
   for he in xrange(DM.get_henum()):
     DM.set_edge_intensity(he, 1.0)
@@ -61,7 +63,7 @@ def main(args):
 
       DM.optimize_position(reject, attract, unfold, OPT_ITT, scale_intensity=1)
 
-      DM.optimize_edges(h, flip_limit)
+      DM.optimize_edges(split_limit, flip_limit)
 
       DM.diminish_all_vertex_intensity(diminish)
 

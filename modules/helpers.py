@@ -33,7 +33,7 @@ def get_args():
   parser.add_argument(
     '--farl',
     type=float,
-    default=0.03
+    default=0.05
   )
   parser.add_argument(
     '--stp',

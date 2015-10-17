@@ -18,11 +18,13 @@ rm -f "$name"*.x
 python main.py \
   --out "$name" \
   --procs 6 \
+  --nearl 0.003 \
+  --farl 0.05 \
   --stp 1.0e-7 \
   --attract 0.3 \
   --reject 1.0 \
   --unfold 0.1 \
-  --stat 1000 \
+  --stat 10 \
   --obj ./data/base.obj
 
 
