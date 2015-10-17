@@ -24,13 +24,15 @@ def main(args):
   reject = args.reject*args.stp
   attract = args.attract*args.stp
   unfold = args.unfold*args.stp
+  triangle = args.triangle*args.stp
   diminish = args.diminish
   smooth = args.smooth
   stat = args.stat
   export = args.export
   out = args.out
-  h = args.nearl*1.2
-  flip_limit = args.nearl*1.2
+  split_limit = args.nearl*1.2
+  flip_limit = args.nearl*0.5
+  vnum_max = args.vnum
 
   DM = DifferentialMesh3d(args.nmax, args.farl, args.nearl, args.farl, args.procs)
 
@@ -48,7 +50,9 @@ def main(args):
 
   alive_vertices = get_surface_edges(DM)
 
-  DM.optimize_edges(h, flip_limit)
+  print_stats(-2, 0.0, DM)
+  DM.optimize_edges(split_limit, flip_limit)
+  print_stats(-1, 0.0, DM)
 
   for he in xrange(DM.get_henum()):
     DM.set_edge_intensity(he, 1.0)
@@ -59,9 +63,9 @@ def main(args):
 
       t1 = time()
 
-      DM.optimize_position(reject, attract, unfold, OPT_ITT, scale_intensity=1)
+      DM.optimize_position(reject, attract, unfold, triangle, OPT_ITT, scale_intensity=1)
 
-      DM.optimize_edges(h, flip_limit)
+      DM.optimize_edges(split_limit, flip_limit)
 
       DM.diminish_all_vertex_intensity(diminish)
 
@@ -80,6 +84,9 @@ def main(args):
       if i%export==0:
         fn = '{:s}_{:08d}.obj'.format(out, i)
         export_obj(DM, 'thing_mesh', fn, write_intensity=False)
+
+      if DM.get_vnum()>vnum_max:
+        return
 
     except KeyboardInterrupt:
 

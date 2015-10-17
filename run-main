@@ -18,12 +18,16 @@ rm -f "$name"*.x
 python main.py \
   --out "$name" \
   --procs 6 \
+  --vnum 1000000 \
+  --nearl 0.0028 \
+  --farl 0.035 \
   --stp 1.0e-7 \
-  --attract 0.3 \
+  --attract 0.2 \
   --reject 1.0 \
   --unfold 0.1 \
-  --stat 1000 \
-  --obj ./data/base.obj
+  --triangle 0.1 \
+  --stat 10 \
+  --obj ./data/base.obj \
 
 
 #usage: main.py [-h] [--obj OBJ] [--procs PROCS] [--profile PROFILE]
@@ -42,6 +46,7 @@ python main.py \
   #--reject REJECT
   #--attract ATTRACT
   #--unfold UNFOLD
+  #--triangle TRIANGLE
   #--nmax NMAX
   #--itt ITT
   #--stat STAT

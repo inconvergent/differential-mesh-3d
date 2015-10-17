@@ -13,6 +13,9 @@ cdef struct s_HE:
   long next # next edge id
   long face # adjacent face id
 
+  long state # state at which length was updated
+  double length # edge length
+
 ctypedef s_HE sHE
 
 
@@ -31,6 +34,8 @@ cdef class Mesh3d:
   cdef double zonewidth
 
   cdef long procs
+
+  cdef long state
 
   ## ARRAYS
 
@@ -60,8 +65,6 @@ cdef class Mesh3d:
 
   cdef long __new_edge(self, long first, long last) nogil
 
-  cdef long __new_edge_from_edge(self, long he1, long last) nogil
-
   cdef long __new_face(self, long he1) nogil
 
   cdef void __set_face_of_three_edges(self, long face, long he1, long he2, long he3) nogil
@@ -78,7 +81,7 @@ cdef class Mesh3d:
 
   cdef long __get_connected_vertices(self, long v1, long *tmp) nogil
 
-  cdef long __get_adjacent_edges(self, long v1, long *tmp) nogil
+  cdef long __get_opposite_edges(self, long v1, long *tmp) nogil
 
   cdef long __next_surface(self, long he1, long direction) nogil
 
@@ -95,6 +98,8 @@ cdef class Mesh3d:
   cdef long __split_surface_edge(self, long he1) nogil
 
   cdef long __split_all_longest_triangle_edges(self, double limit) nogil
+
+  cdef void __set_edge_length(self, long he1) nogil
 
   cdef double __get_edge_length(self, long he1) nogil
 
@@ -121,10 +126,6 @@ cdef class Mesh3d:
   cpdef long safe_vertex_positions(self, double limit)
 
   cpdef long next_surface(self, long he1, long direction)
-
-  cpdef long flip_edge(self, long he1, double limit)
-
-  cpdef long split_edge(self, long he1)
 
   cpdef long optimize_edges(self, double split_limit, double flip_limit)
 

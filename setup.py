@@ -12,7 +12,8 @@ _extra = ['-fopenmp', '-O3', '-ffast-math']
 extensions = [
   Extension('mesh3d',
             sources = ['./src/mesh3d.pyx'],
-            extra_compile_args = _extra
+            extra_compile_args = _extra,
+            extra_link_args = ['-fopenmp']
     ),
   Extension('differentialMesh3d',
             sources = ['./src/differentialMesh3d.pyx'],
