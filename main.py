@@ -70,7 +70,7 @@ def main(args):
       DM.diminish_all_vertex_intensity(diminish)
 
       if i%100 == 0:
-        alive_vertices = [l for l in get_surface_edges(DM) if random()<0.7]
+        alive_vertices = [l for l in get_surface_edges(DM) if random()<0.95]
         print('number of alive vertices: {:d}'.format(len(alive_vertices)))
 
       if len(alive_vertices)>0:
