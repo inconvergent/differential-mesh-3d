@@ -249,10 +249,9 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     cdef double nrmc
     cdef double s
 
-    cdef long num_adjacent = self.__get_adjacent_edges(v1, tmp)
-    #print(v1,self.VHE[v1],adjacent)
+    cdef long num_opposite = self.__get_opposite_edges(v1, tmp)
 
-    for k in xrange(num_adjacent):
+    for k in xrange(num_opposite):
 
       he1 = tmp[k]
 
@@ -296,7 +295,6 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
       nrm = sqrt(crossx*crossx+crossy*crossy+crossz*crossz)
       nrmc = sqrt(cx*cx+cy*cy+cz*cz)
-      #print(nrm,nrmc)
 
       if nrm<1e-9 or nrmc<1e-9:
         continue
@@ -304,7 +302,6 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
       crossx /= nrm
       crossy /= nrm
       crossz /= nrm
-
 
       s = (1.0-fabs(crossx*cx/nrmc+crossy*cy/nrmc+crossz*cz/nrmc))*stp
 
@@ -315,46 +312,62 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
     return 1
 
-  #@cython.wraparound(False)
-  #@cython.boundscheck(False)
-  #@cython.nonecheck(False)
-  #@cython.cdivision(True)
-  #cdef long __edge_vertex_force(self, long he1, long v1, double stp) nogil:
+  @cython.wraparound(False)
+  @cython.boundscheck(False)
+  @cython.nonecheck(False)
+  @cython.cdivision(True)
+  cdef long __triangle(self, long v1, double stp, long *tmp) nogil:
 
-    #cdef long henum = self.henum
-    #cdef double nearl = self.nearl
 
-    #cdef long a = self.HE[he1].first
-    #cdef long b = self.HE[he1].last
+    cdef long num_opposite = self.__get_opposite_edges(v1, tmp)
+    cdef long k
 
-    #cdef double x = (self.X[b]+self.X[a])*0.5
-    #cdef double y = (self.Y[b]+self.Y[a])*0.5
-    #cdef double z = (self.Z[b]+self.Z[a])*0.5
+    for k in xrange(num_opposite):
 
-    #cdef double dx = self.X[v1]-x
-    #cdef double dy = self.Y[v1]-y
-    #cdef double dz = self.Z[v1]-z
+      self.__edge_vertex_force(tmp[k], v1, stp)
 
-    #cdef double nrm = sqrt(dx*dx+dy*dy+dz*dz)
+    return num_opposite
 
-    #if nrm<=0:
+  @cython.wraparound(False)
+  @cython.boundscheck(False)
+  @cython.nonecheck(False)
+  @cython.cdivision(True)
+  cdef long __edge_vertex_force(self, long he1, long v1, double stp) nogil:
 
-      #return -1
+    cdef long henum = self.henum
+    cdef double nearl = self.nearl
 
-    #if nrm>0.5*sqrt(3.0)*nearl:
+    cdef long a = self.HE[he1].first
+    cdef long b = self.HE[he1].last
 
-      ##pass
-      #self.DX[v1] += -dx/nrm*stp
-      #self.DY[v1] += -dy/nrm*stp
-      #self.DZ[v1] += -dz/nrm*stp
+    cdef double x = (self.X[b]+self.X[a])*0.5
+    cdef double y = (self.Y[b]+self.Y[a])*0.5
+    cdef double z = (self.Z[b]+self.Z[a])*0.5
 
-    #else:
+    cdef double dx = self.X[v1]-x
+    cdef double dy = self.Y[v1]-y
+    cdef double dz = self.Z[v1]-z
 
-      #self.DX[v1] += dx/nrm*stp
-      #self.DY[v1] += dy/nrm*stp
-      #self.DZ[v1] += dz/nrm*stp
+    cdef double nrm = sqrt(dx*dx+dy*dy+dz*dz)
 
-    #return 1
+    if nrm<=0:
+
+      return -1
+
+    if nrm>0.5*sqrt(3.0)*nearl:
+
+      #pass
+      self.DX[v1] += -dx/nrm*stp
+      self.DY[v1] += -dy/nrm*stp
+      self.DZ[v1] += -dz/nrm*stp
+
+    else:
+
+      self.DX[v1] += dx/nrm*stp
+      self.DY[v1] += dy/nrm*stp
+      self.DZ[v1] += dz/nrm*stp
+
+    return 1
 
   @cython.wraparound(False)
   @cython.boundscheck(False)
@@ -365,6 +378,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     double reject_stp,
     double attract_stp,
     double unfold_stp,
+    double triangle_stp,
     long itt,
     long scale_intensity
   ):
@@ -408,6 +422,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
           self.__reject(v, reject_stp, vertices, dst)
           self.__attract(v, attract_stp, vertices)
           self.__unfold(v, unfold_stp, vertices)
+          self.__triangle(v, triangle_stp, vertices)
 
         free(vertices)
         free(dst)
@@ -439,7 +454,6 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
           self.X[v] = x
           self.Y[v] = y
           self.Z[v] = z
-
 
     return 1
 

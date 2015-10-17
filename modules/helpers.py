@@ -56,6 +56,11 @@ def get_args():
     default=0.1
   )
   parser.add_argument(
+    '--triangle',
+    type=float,
+    default=0.1
+  )
+  parser.add_argument(
     '--diminish',
     type=float,
     default=0.99
@@ -72,6 +77,11 @@ def get_args():
   )
   parser.add_argument(
     '--itt',
+    type=int,
+    default=10000000000
+  )
+  parser.add_argument(
+    '--vnum',
     type=int,
     default=10000000000
   )

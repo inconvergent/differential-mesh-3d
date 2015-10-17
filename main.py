@@ -24,13 +24,15 @@ def main(args):
   reject = args.reject*args.stp
   attract = args.attract*args.stp
   unfold = args.unfold*args.stp
+  triangle = args.triangle*args.stp
   diminish = args.diminish
   smooth = args.smooth
   stat = args.stat
   export = args.export
   out = args.out
   split_limit = args.nearl*1.2
-  flip_limit = args.nearl*1.2
+  flip_limit = args.nearl*0.5
+  vnum_max = args.vnum
 
   DM = DifferentialMesh3d(args.nmax, args.farl, args.nearl, args.farl, args.procs)
 
@@ -61,7 +63,7 @@ def main(args):
 
       t1 = time()
 
-      DM.optimize_position(reject, attract, unfold, OPT_ITT, scale_intensity=1)
+      DM.optimize_position(reject, attract, unfold, triangle, OPT_ITT, scale_intensity=1)
 
       DM.optimize_edges(split_limit, flip_limit)
 
@@ -82,6 +84,9 @@ def main(args):
       if i%export==0:
         fn = '{:s}_{:08d}.obj'.format(out, i)
         export_obj(DM, 'thing_mesh', fn, write_intensity=False)
+
+      if DM.get_vnum()>vnum_max:
+        return
 
     except KeyboardInterrupt:
 

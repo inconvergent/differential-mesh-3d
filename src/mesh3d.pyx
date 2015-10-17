@@ -6,6 +6,8 @@ from __future__ import division
 cimport cython
 from libc.stdlib cimport malloc, free
 
+from cython.parallel import parallel, prange
+
 from libc.math cimport sqrt
 from libc.math cimport pow as cpow
 from libc.math cimport cos
@@ -73,6 +75,8 @@ cdef class Mesh3d:
     self.zonewidth = zonewidth
 
     self.procs = procs
+
+    self.state = 0
 
     self.nz = <long>(1.0 /zonewidth)
 
@@ -155,9 +159,6 @@ cdef class Mesh3d:
   @cython.boundscheck(False)
   @cython.nonecheck(False)
   cdef long __safe_vertex_positions(self, double limit) nogil:
-    """
-    check that all vertices are within limit of unit square boundary
-    """
 
     cdef long vnum = self.vnum
     cdef long i
@@ -218,9 +219,6 @@ cdef class Mesh3d:
   @cython.boundscheck(False)
   @cython.nonecheck(False)
   cdef long __new_vertex(self, double x, double y, double z) nogil:
-    """
-    adds a vertex x,y. returns id of new vertex
-    """
 
     if self.__valid_new_vertex(x,y,z)<0:
       return -1
@@ -256,33 +254,8 @@ cdef class Mesh3d:
     he.twin = -1
     he.next = -1
 
-    self.HE[henum] = he
-
-    self.henum += 1
-    return henum
-
-  @cython.wraparound(False)
-  @cython.boundscheck(False)
-  @cython.nonecheck(False)
-  cdef long __new_edge_from_edge(self, long he1, long last) nogil:
-    """
-    appends edge to end of edge, he, to vertex, last. returns id of new edge
-    """
-
-    cdef long henum = self.henum
-
-    cdef long first = self.HE[he1].last
-    self.HE[he1].next = henum
-
-    cdef sHE he
-
-    he.id = henum
-    he.gen = -1
-    he.first = first
-    he.last = last
-    he.face = -1
-    he.twin = -1
-    he.next = -1
+    he.length = -10000.0
+    he.state = -1
 
     self.HE[henum] = he
 
@@ -293,9 +266,6 @@ cdef class Mesh3d:
   @cython.boundscheck(False)
   @cython.nonecheck(False)
   cdef long __new_face(self, long he1) nogil:
-    """
-    creates a face and associates it with edge, he. returns id of new face
-    """
 
     cdef long fnum = self.fnum
 
@@ -375,7 +345,6 @@ cdef class Mesh3d:
     cdef long he2
     cdef long twin
 
-    #cdef list connected = []
     cdef long num = 0
 
     ## counter clockwise / backward surface
@@ -385,7 +354,6 @@ cdef class Mesh3d:
       he2 = self.HE[self.HE[twin].next].next
       twin = self.HE[he2].twin
 
-      #connected.append(self.HE[he2].first)
       tmp[num] = self.HE[he2].first
       num += 1
 
@@ -397,7 +365,6 @@ cdef class Mesh3d:
       ## clockwise / forward surface
 
       twin = self.HE[he1].twin
-      #connected.append(self.HE[he1].last)
       tmp[num] = self.HE[he1].last
       num += 1
 
@@ -407,7 +374,6 @@ cdef class Mesh3d:
           he2 = self.HE[twin].next
           twin = self.HE[he2].twin
 
-          #connected.append(self.HE[he2].last)
           tmp[num] = self.HE[he2].last
           num += 1
 
@@ -420,7 +386,7 @@ cdef class Mesh3d:
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cdef long __get_adjacent_edges(self, long v1, long *tmp) nogil:
+  cdef long __get_opposite_edges(self, long v1, long *tmp) nogil:
 
     ## TODO: dont use list
 
@@ -429,7 +395,6 @@ cdef class Mesh3d:
     cdef long adj
     cdef long twin
 
-    #cdef list adjacent = []
     cdef long num = 0
 
     ## counter clockwise / backward surface
@@ -439,7 +404,6 @@ cdef class Mesh3d:
       he2 = self.HE[adj].next
       twin = self.HE[he2].twin
 
-      #adjacent.append(adj)
       tmp[num] = adj
       num += 1
 
@@ -460,7 +424,6 @@ cdef class Mesh3d:
           adj = self.HE[he2].next
           twin = self.HE[he2].twin
 
-          #adjacent.append(adj)
           tmp[num] = adj
           num += 1
 
@@ -596,6 +559,12 @@ cdef class Mesh3d:
       return -1
 
     cdef long the1 = self.HE[he1].twin
+
+    if self.HE[he1].state<self.state or\
+        self.HE[the1].state<self.state:
+
+      return -1
+
     cdef long f1 = self.HE[he1].face
     cdef long f2 = self.HE[the1].face
 
@@ -611,9 +580,12 @@ cdef class Mesh3d:
 
     cdef double limit2 = limit*limit
 
-    cdef double ablen = (cpow(self.X[a]-self.X[b],2)+
-                            cpow(self.Y[a]-self.Y[b],2)+
-                            cpow(self.Z[a]-self.Z[b],2))
+    #cdef double ablen = (cpow(self.X[a]-self.X[b],2)+
+                            #cpow(self.Y[a]-self.Y[b],2)+
+                            #cpow(self.Z[a]-self.Z[b],2))
+
+    cdef double ablen = cpow(self.HE[the1].length,2.0)
+
     if ablen<limit2:
       return -1
 
@@ -660,6 +632,9 @@ cdef class Mesh3d:
     self.HE[he1].last = d
     self.HE[the1].first = d
     self.HE[the1].last = c
+
+    self.HE[he1].state = -1
+    self.HE[the1].state = -1
 
     return 1
 
@@ -762,6 +737,9 @@ cdef class Mesh3d:
     self.__set_gen_of_three_edges(he.gen, eb1, ce1, bc1)
     self.__set_gen_of_three_edges(he.gen, ed1, db1, be1)
 
+    self.HE[he1].state = -1
+    self.HE[the1].state = -1
+
     return 1
 
   @cython.wraparound(False)
@@ -819,6 +797,8 @@ cdef class Mesh3d:
     self.__set_gen_of_three_edges(he.gen, ca1, he1, ec1)
     self.__set_gen_of_three_edges(he.gen, eb1, ce1, bc1)
 
+    self.HE[he1].state = -1
+
     return 1
 
   @cython.wraparound(False)
@@ -837,27 +817,29 @@ cdef class Mesh3d:
     cdef double l2
     cdef double l3
 
-    for f in reversed(xrange(fnum)):
+    cdef long s1
+    cdef long s2
+    cdef long s3
+
+    for f in xrange(fnum):
 
       he1 = self.FHE[f]
       he2 = self.HE[he1].next
       he3 = self.HE[he2].next
 
-      l1 = self.__get_edge_length(he1)
+      l1 = self.HE[he1].length
+      l2 = self.HE[he2].length
+      l3 = self.HE[he3].length
 
-      if l1<=0.0:
+      s1 = self.HE[he1].state
+      s2 = self.HE[he2].state
+      s3 = self.HE[he3].state
+
+      if s1<self.state or s2<self.state or s3<self.state:
 
         continue
 
-      l2 = self.__get_edge_length(he2)
-
-      if l2<=0.0:
-
-        continue
-
-      l3 = self.__get_edge_length(he3)
-
-      if l3<=0.0:
+      if l1<1.e-9 or l2<1.e-9 or l3<1.e-9:
 
         continue
 
@@ -874,6 +856,23 @@ cdef class Mesh3d:
         self.__split_edge(he3)
 
     return 1
+
+  @cython.wraparound(False)
+  @cython.boundscheck(False)
+  @cython.nonecheck(False)
+  cdef void __set_edge_length(self, long he) nogil:
+
+    cdef double l = self.__get_edge_length(he)
+    cdef long twin = self.HE[he].twin
+
+    self.HE[he].length = l
+    self.HE[he].state = self.state
+
+    if twin>-1:
+      self.HE[twin].length = l
+      self.HE[twin].state = self.state
+
+    return
 
   @cython.wraparound(False)
   @cython.boundscheck(False)
@@ -1097,28 +1096,27 @@ cdef class Mesh3d:
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cpdef long flip_edge(self, long he1, double limit):
-
-    return self.__flip_edge(he1, limit)
-
-  @cython.wraparound(False)
-  @cython.boundscheck(False)
-  @cython.nonecheck(False)
-  cpdef long split_edge(self, long he):
-
-    return self.__split_edge(he)
-
-  @cython.wraparound(False)
-  @cython.boundscheck(False)
-  @cython.nonecheck(False)
   cpdef long optimize_edges(self, double split_limit, double flip_limit):
 
     cdef long he1
+    cdef long v
+
+    self.state += 1
+
+    with nogil, parallel(num_threads=self.procs):
+
+      for he1 in prange(self.henum, schedule='guided'):
+
+        if self.HE[he1].first<self.HE[he1].last or self.HE[he1].twin<0:
+
+          self.__set_edge_length(he1)
 
     for he1 in xrange(self.henum):
 
-      ## only consider half the half-edges
+      ## only consider half the half-edges, this misses some surface edges, but
+      ## we're not flipping them anyway.
       if self.HE[he1].first<self.HE[he1].last:
+
         self.__flip_edge(he1, flip_limit)
 
     self.__split_all_longest_triangle_edges(split_limit)
@@ -1147,8 +1145,6 @@ cdef class Mesh3d:
   @cython.boundscheck(False)
   @cython.nonecheck(False)
   cpdef long np_get_triangles_vertices(self, np.ndarray[long, mode="c",ndim=2] a):
-    """
-    """
 
     cdef long fnum = self.fnum
     cdef long f
@@ -1180,10 +1176,6 @@ cdef class Mesh3d:
   @cython.boundscheck(False)
   @cython.nonecheck(False)
   cpdef long np_get_triangles_gen(self, np.ndarray[long, mode="c",ndim=1] a):
-    """
-    assigns triangle generations to a
-    returns number of triangles
-    """
 
     cdef long f
     for f in xrange(self.fnum):
@@ -1267,8 +1259,6 @@ cdef class Mesh3d:
   @cython.boundscheck(False)
   @cython.nonecheck(False)
   cpdef list get_triangle_edges(self, long f1):
-    """
-    """
 
     cdef long e1 = self.FHE[f1]
     cdef long e2 = self.HE[e1].next
@@ -1293,10 +1283,6 @@ cdef class Mesh3d:
   @cython.boundscheck(False)
   @cython.nonecheck(False)
   cpdef long is_surface_edge(self, long t1):
-    """
-    returns 1 if edge is on the surface of the mesh. that is, the edge has no
-    twin edge
-    """
 
     return self.__is_surface_edge(t1)
 
@@ -1311,9 +1297,6 @@ cdef class Mesh3d:
   @cython.boundscheck(False)
   @cython.nonecheck(False)
   cpdef dict get_edge_dict(self, long he1):
-    """
-    get some debug info about the edge
-    """
 
     return {
       'id': self.HE[he1].id,
@@ -1329,9 +1312,6 @@ cdef class Mesh3d:
   @cython.boundscheck(False)
   @cython.nonecheck(False)
   cpdef list get_triangle_dicts(self, long f):
-    """
-    get some debug info about the triangle
-    """
 
     cdef long he1 = self.FHE[f]
     cdef long he2 = self.HE[he1].next
@@ -1345,22 +1325,16 @@ cdef class Mesh3d:
 
   @cython.nonecheck(False)
   cpdef long get_vnum(self):
-    """
-    number of vertices
-    """
+
     return self.vnum
 
   @cython.nonecheck(False)
   cpdef long get_henum(self):
-    """
-    number of (half) edges
-    """
+
     return self.henum
 
   @cython.nonecheck(False)
   cpdef long get_fnum(self):
-    """
-    number of faces
-    """
+
     return self.fnum
 

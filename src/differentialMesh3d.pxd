@@ -30,6 +30,10 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
   cdef long __unfold(self, long v1, double scale, long *tmp) nogil
 
+  cdef long __triangle(self, long v1, double scale, long *tmp) nogil
+
+  cdef long __edge_vertex_force(self, long he1, long v1, double stp) nogil
+
   cdef long __smooth_intensity(self, double alpha) nogil
 
   ## EXTERNAL
@@ -47,6 +51,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     double reject_stp,
     double attract_stp,
     double unfold_stp,
+    double triangle_stp,
     long itt,
     long scale_intensity
   )
