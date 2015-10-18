@@ -60,9 +60,9 @@ cdef class Mesh3d:
     reserved upon instantiation
 
     ### TODO: dynamically allocate this space
-
-
     """
+
+    from time import time
 
     self.nmax = nmax
 
@@ -79,6 +79,8 @@ cdef class Mesh3d:
     self.state = 0
 
     self.nz = <long>(1.0 /zonewidth)
+
+    self.start_time = time()
 
     if self.nz<3:
       self.nz = 1
@@ -1335,6 +1337,10 @@ cdef class Mesh3d:
 
   @cython.nonecheck(False)
   cpdef long get_fnum(self):
-
     return self.fnum
+
+  @cython.nonecheck(False)
+  cpdef double get_start_time(self):
+
+    return self.start_time
 

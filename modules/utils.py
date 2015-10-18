@@ -88,15 +88,19 @@ def load_obj(
     'vertices': [list(row) for row in np_vertices]
   }
 
-def export_obj(dm, obj_name, fn, write_intensity=False):
+def export_obj(dm, obj_name, fn, write_intensity=False, meta=False):
 
   from numpy import zeros
   from codecs import open
+  from time import time
 
   vnum = dm.get_vnum()
   fnum = dm.get_fnum()
+  henum = dm.get_henum()
   np_verts = zeros((vnum,3),'float')
   np_tris = zeros((fnum,3),'int')
+
+  runtime = time()-dm.get_start_time()
 
   dm.np_get_vertices(np_verts)
   dm.np_get_triangles_vertices(np_tris)
@@ -111,6 +115,15 @@ def export_obj(dm, obj_name, fn, write_intensity=False):
   print('num vertices: {:d}, num triangles: {:d}'.format(vnum, fnum))
 
   with open(fn, 'wb', encoding='utf8') as f:
+
+    if meta:
+      f.write('# meta:\n')
+      f.write(meta+'\n')
+
+    f.write('# info:\n')
+
+    f.write('# vnum: {:d}\n# henum: {:d}\n# fnum: {:d}\n# runtime: {:f}\n\n'
+      .format(vnum, fnum, henum, runtime))
 
     f.write('o {:s}\n'.format(obj_name))
 

@@ -27,5 +27,7 @@ python main.py \
   --unfold 0.1 \
   --triangle 0.1 \
   --stat 100 \
+  --seedFreq 100 \
+  --seedRatio 0.9 \
   --obj ./data/base.obj \
 

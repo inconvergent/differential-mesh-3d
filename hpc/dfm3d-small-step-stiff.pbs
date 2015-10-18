@@ -44,6 +44,8 @@ $python $program \
   --unfold 0.2 \
   --triangle 0.1 \
   --stat 1000 \
+  --seedFreq 100 \
+  --seedRatio 0.9 \
   --obj $project/data/base.obj \
   >> $fullPath.out
  

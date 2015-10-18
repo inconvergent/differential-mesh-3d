@@ -37,6 +37,8 @@ cdef class Mesh3d:
 
   cdef long state
 
+  cdef double start_time
+
   ## ARRAYS
 
   cdef double *X
@@ -173,4 +175,6 @@ cdef class Mesh3d:
   cpdef long get_henum(self)
 
   cpdef long get_fnum(self)
+
+  cpdef double get_start_time(self)
 

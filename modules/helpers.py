@@ -3,6 +3,7 @@
 
 from __future__ import print_function
 
+
 def get_args():
 
   import argparse
@@ -91,6 +92,16 @@ def get_args():
     default=100
   )
   parser.add_argument(
+    '--seedFreq',
+    type=int,
+    default=100
+  )
+  parser.add_argument(
+    '--seedRatio',
+    type=float,
+    default=1.0
+  )
+  parser.add_argument(
     '--export',
     type=int,
     default=1000
@@ -108,21 +119,29 @@ def get_args():
 
   return parser.parse_args()
 
+def make_info_str(args):
+  s = ''
+  for k in vars(args):
+    s += '# ' + str(k) + ': ' + str(getattr(args,k)) + '\n'
+  return s
 
-def print_stats(steps,t_diff,dm):
 
-  import time
+def print_stats(steps,dm):
 
-  s = '{:s} | steps: {:d} time: {:.5f} vnum: {:d} henum: {:d} fnum: {:d}'.format(
-    time.strftime('%d/%m/%y %H:%M:%S'),
-    steps,
-    t_diff,
-    dm.get_vnum(),
-    dm.get_henum(),
-    dm.get_fnum()
+  from time import strftime
+  from time import time
+
+  print(
+    '{:s} | steps: {:d} time: {:.5f} vnum: {:d} henum: {:d} fnum: {:d}'
+      .format(
+      strftime('%d/%m/%y %H:%M:%S'),
+      steps,
+      time()-dm.get_start_time(),
+      dm.get_vnum(),
+      dm.get_henum(),
+      dm.get_fnum()
+    )
   )
-
-  print(s)
 
   return
 
