@@ -1,0 +1,49 @@
+#!/bin/bash
+
+#PBS -N small-step 
+#PBS -A ntnu233
+#PBS -l walltime=24:00:00
+#PBS -l select=1:ncpus=32:ompthreads=16
+#PBS -M shall.be.lifted@gmail.com
+
+procs=16
+
+home=/home/ntnu/andehoff/
+project=$home/x/differential-mesh-3d/
+program=$project/main.py
+
+name=small-step
+prefix=/work/andehoff/differential-mesh-3d/
+targetDir=$prefix/$name/
+fullPath=$targetDir/$name
+python=/sw/sdev/Modules/python/python-2.7.6/bin/python
+
+
+export PYTHONPATH=$home/.local/lib/python2.7/site-packages/
+export OMP_NUM_THREADS=$procs
+
+mkdir -p $targetDir
+rm -rf $fullPath*.obj
+rm -rf $fullPath*.x
+
+
+module load intelcomp/14.0.1
+module load mpt/2.09
+module load python/2.7.6
+ 
+
+$python $program \
+  --out $fullPath\
+  --procs $procs \
+  --vnum 200000 \
+  --nearl 0.0028 \
+  --farl 0.045 \
+  --stp 1.0e-8 \
+  --attract 0.2 \
+  --reject 1.0 \
+  --unfold 0.1 \
+  --triangle 0.1 \
+  --stat 1000 \
+  --obj $project/data/base.obj \
+  >> $fullPath.out
+ 
