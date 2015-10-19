@@ -1271,19 +1271,6 @@ cdef class Mesh3d:
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cpdef long diminish_all_vertex_intensity(self, double d):
-
-    cdef long v
-
-    for v in xrange(self.vnum):
-
-      self.I[v] *= d
-
-    return 1
-
-  @cython.wraparound(False)
-  @cython.boundscheck(False)
-  @cython.nonecheck(False)
   cpdef long is_surface_edge(self, long t1):
 
     return self.__is_surface_edge(t1)

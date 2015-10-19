@@ -67,42 +67,17 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cdef long __smooth_intensity(self, double alpha) nogil:
+  @cython.cdivision(True)
+  cdef long __smooth_intensity(self, long v1, double alpha, double *new, long *vertices, long num) nogil:
 
-    cdef long vnum = self.vnum
-    cdef long e
-    cdef long v
-    cdef long v1
-    cdef long v2
-    cdef double a
-    cdef double b
+    cdef double intens = self.I[v1]
 
-    newintensity = <double *>malloc(vnum*sizeof(double))
-    double_array_init(newintensity, vnum, 0.)
+    for k in xrange(num):
 
-    count = <long *>malloc(vnum*sizeof(long))
-    long_array_init(count, vnum, 0)
+      intens = intens + alpha*self.I[vertices[k]]
+      #new[v1] += ((b-a)*alpha + a*(1.0-alpha))/(1.0-alpha)
 
-    for e in xrange(self.henum):
-
-      v1 = self.HE[e].first
-      v2 = self.HE[e].last
-
-      a = self.I[v1]
-      b = self.I[v2]
-
-      newintensity[v1] += ((b-a)*alpha + a*(1.0-alpha))/(1.0-alpha)
-      newintensity[v2] += ((a-b)*alpha + b*(1.0-alpha))/(1.0-alpha)
-
-      count[v1] += 1
-      count[v2] += 1
-
-    for v in xrange(vnum):
-
-      self.I[v] = newintensity[v]/<double>(count[v])
-
-    free(newintensity)
-    free(count)
+    new[v1] = intens/(1.0+<double>(num*alpha))
 
     return 1
 
@@ -110,7 +85,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.boundscheck(False)
   @cython.nonecheck(False)
   @cython.cdivision(True)
-  cdef long __reject(self, long v, double stp, long *vertices, double *dst) nogil:
+  cdef long __reject(self, long v, double stp, long *vertices, double *dst, long num) nogil:
 
     cdef long k
     cdef long k4
@@ -126,16 +101,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     cdef double resy = 0.0
     cdef double resz = 0.0
 
-    cdef long neighbor_num = self.zonemap.__sphere_vertices_dst(
-      self.X[v],
-      self.Y[v],
-      self.Z[v],
-      self.farl,
-      vertices,
-      dst
-    )
-
-    for k in range(neighbor_num):
+    for k in range(num):
 
       neigh = vertices[k]
 
@@ -165,14 +131,13 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     self.DY[v] += resy*stp
     self.DZ[v] += resz*stp
 
-    return neighbor_num
-
+    return num
 
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
   @cython.cdivision(True)
-  cdef long __attract(self, long v1, double stp, long *tmp) nogil:
+  cdef long __attract(self, long v1, double stp, long *vertices, long num) nogil:
 
     cdef long v2
     cdef long k
@@ -184,11 +149,9 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
     cdef double s
 
-    cdef long num_connected = self.__get_connected_vertices(v1, tmp)
+    for k in xrange(num):
 
-    for k in xrange(num_connected):
-
-      v2 = tmp[k]
+      v2 = vertices[k]
 
       dx = self.X[v2]-self.X[v1]
       dy = self.Y[v2]-self.Y[v1]
@@ -215,7 +178,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.boundscheck(False)
   @cython.nonecheck(False)
   @cython.cdivision(True)
-  cdef long __unfold(self, long v1, double stp, long *tmp) nogil:
+  cdef long __unfold(self, long v1, double stp, long *vertices, long num) nogil:
 
     cdef long v2
     cdef long first
@@ -249,11 +212,9 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     cdef double nrmc
     cdef double s
 
-    cdef long num_opposite = self.__get_opposite_edges(v1, tmp)
+    for k in xrange(num):
 
-    for k in xrange(num_opposite):
-
-      he1 = tmp[k]
+      he1 = vertices[k]
 
       if self.__is_surface_edge(he1)>0:
         continue
@@ -316,17 +277,15 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.boundscheck(False)
   @cython.nonecheck(False)
   @cython.cdivision(True)
-  cdef long __triangle(self, long v1, double stp, long *tmp) nogil:
+  cdef long __triangle(self, long v1, double stp, long *vertices, long num) nogil:
 
-
-    cdef long num_opposite = self.__get_opposite_edges(v1, tmp)
     cdef long k
 
-    for k in xrange(num_opposite):
+    for k in xrange(num):
 
-      self.__edge_vertex_force(tmp[k], v1, stp)
+      self.__edge_vertex_force(vertices[k], v1, stp)
 
-    return num_opposite
+    return num
 
   @cython.wraparound(False)
   @cython.boundscheck(False)
@@ -379,6 +338,8 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     double attract_stp,
     double unfold_stp,
     double triangle_stp,
+    double diminish,
+    double alpha,
     long itt,
     long scale_intensity
   ):
@@ -399,8 +360,9 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     cdef double stp_limit = self.nearl*0.3
 
     cdef long *vertices
-    cdef long *tmp
+    cdef long num
     cdef double *dst
+    cdef double *newintensity
 
     cdef long asize
 
@@ -416,18 +378,33 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
         vertices = <long *>malloc(asize*sizeof(long))
         dst = <double *>malloc(asize*sizeof(double)*4)
+        newintensity = <double *>malloc(self.vnum*sizeof(double))
 
         for v in prange(self.vnum, schedule='guided'):
 
-          self.__reject(v, reject_stp, vertices, dst)
-          self.__attract(v, attract_stp, vertices)
-          self.__unfold(v, unfold_stp, vertices)
-          self.__triangle(v, triangle_stp, vertices)
+          # sphere
+          num = self.zonemap.__sphere_vertices_dst(
+            self.X[v],
+            self.Y[v],
+            self.Z[v],
+            self.farl,
+            vertices,
+            dst
+          )
+          self.__reject(v, reject_stp, vertices, dst, num)
+
+          # connected
+          num = self.__get_connected_vertices(v, vertices)
+          self.__attract(v, attract_stp, vertices, num)
+          self.__smooth_intensity(v, alpha, newintensity, vertices, num)
+
+          # opposite
+          num = self.__get_opposite_edges(v, vertices)
+          self.__unfold(v, unfold_stp, vertices, num)
+          self.__triangle(v, triangle_stp, vertices, num)
 
         free(vertices)
         free(dst)
-
-      with nogil, parallel(num_threads=self.procs):
 
         for v in prange(self.vnum, schedule='guided'):
 
@@ -454,6 +431,9 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
           self.X[v] = x
           self.Y[v] = y
           self.Z[v] = z
+          self.I[v] = newintensity[v]*diminish
+
+        free(newintensity)
 
     return 1
 
@@ -475,11 +455,4 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
       self.Z[v] += a[v,2]*intensity
 
     return 1
-
-  @cython.wraparound(False)
-  @cython.boundscheck(False)
-  @cython.nonecheck(False)
-  cpdef long smooth_intensity(self, double alpha):
-
-    return self.__smooth_intensity(alpha)
 

@@ -72,18 +72,13 @@ def main(args):
         attract,
         unfold,
         triangle,
+        diminish,
+        smooth,
         OPT_ITT,
         scale_intensity=1
       )
 
       DM.optimize_edges(split_limit, flip_limit)
-
-      ## TODO: parallel
-      DM.diminish_all_vertex_intensity(diminish)
-
-      ## TODO: parallel
-      DM.smooth_intensity(smooth)
-
 
       ## TODO: make this more configurable.
       ## this only works for open surfaces.

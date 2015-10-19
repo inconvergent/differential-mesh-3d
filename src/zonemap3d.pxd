@@ -63,6 +63,8 @@ cdef class Zonemap3d:
 
   cdef long __get_max_sphere_count(self) nogil
 
+  cdef long __get_greatest_zone_size(self) nogil
+
   cdef void __assign_xyz_arrays(self, double *x, double *y, double *z) nogil
 
   ## INFO
@@ -78,6 +80,8 @@ cdef class Zonemap3d:
   cpdef long sphere_is_free(self, double x, double y, double z, double rad)
 
   cpdef long get_max_sphere_count(self)
+
+  cpdef long get_greatest_zone_size(self)
 
   cpdef long get_vnum(self)
 

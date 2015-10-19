@@ -160,8 +160,6 @@ cdef class Mesh3d:
 
   cpdef dict initiate_faces(self, list vertices, list faces)
 
-  cpdef long diminish_all_vertex_intensity(self, double d)
-
   cpdef long is_surface_edge(self, long he1)
 
   cpdef double get_edge_length(self, long he1)

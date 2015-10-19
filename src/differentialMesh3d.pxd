@@ -24,21 +24,19 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
   ## FUNCTIONS
 
-  cdef long __reject(self, long v1, double stp, long *vertices, double *dst) nogil
+  cdef long __reject(self, long v1, double stp, long *vertices, double *dst, long num) nogil
 
-  cdef long __attract(self, long v1, double stp, long *tmp) nogil
+  cdef long __attract(self, long v1, double stp, long *vertices, long num) nogil
 
-  cdef long __unfold(self, long v1, double scale, long *tmp) nogil
+  cdef long __unfold(self, long v1, double stp, long *vertices, long num) nogil
 
-  cdef long __triangle(self, long v1, double scale, long *tmp) nogil
+  cdef long __triangle(self, long v1, double stp, long *vertices, long num) nogil
 
   cdef long __edge_vertex_force(self, long he1, long v1, double stp) nogil
 
-  cdef long __smooth_intensity(self, double alpha) nogil
+  cdef long __smooth_intensity(self, long v1, double alpha, double *new, long *vertices, long num) nogil
 
   ## EXTERNAL
-
-  cpdef long smooth_intensity(self, double alpha)
 
   cpdef long position_noise(
     self,
@@ -52,6 +50,8 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     double attract_stp,
     double unfold_stp,
     double triangle_stp,
+    double diminish,
+    double alpha,
     long itt,
     long scale_intensity
   )
