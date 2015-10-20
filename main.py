@@ -8,7 +8,7 @@ from modules.utils import load_obj
 from modules.utils import random_unit_vec
 from modules.utils import get_surface_edges
 
-OPT_ITT = 1
+
 MOVE = [0.5]*3
 
 
@@ -74,7 +74,6 @@ def main(args):
         triangle,
         diminish,
         smooth,
-        OPT_ITT,
         scale_intensity=1
       )
 

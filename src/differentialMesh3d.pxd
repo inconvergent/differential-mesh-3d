@@ -52,7 +52,6 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     double triangle_stp,
     double diminish,
     double alpha,
-    long itt,
     long scale_intensity
   )
 

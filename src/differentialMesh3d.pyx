@@ -340,7 +340,6 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     double triangle_stp,
     double diminish,
     double alpha,
-    long itt,
     long scale_intensity
   ):
 
@@ -362,78 +361,77 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     cdef long *vertices
     cdef long num
     cdef double *dst
-    cdef double *newintensity
+    cdef double *newintensity = <double *>malloc(self.vnum*sizeof(double))
 
     cdef long asize
 
-    for i in xrange(itt):
+    double_array_init(self.DX, self.vnum, 0.)
+    double_array_init(self.DY, self.vnum, 0.)
+    double_array_init(self.DZ, self.vnum, 0.)
 
-      double_array_init(self.DX, self.vnum, 0.)
-      double_array_init(self.DY, self.vnum, 0.)
-      double_array_init(self.DZ, self.vnum, 0.)
+    asize = self.zonemap.__get_max_sphere_count()
 
-      asize = self.zonemap.__get_max_sphere_count()
+    with nogil, parallel(num_threads=self.procs):
 
-      with nogil, parallel(num_threads=self.procs):
+      vertices = <long *>malloc(asize*sizeof(long))
+      dst = <double *>malloc(asize*sizeof(double)*4)
 
-        vertices = <long *>malloc(asize*sizeof(long))
-        dst = <double *>malloc(asize*sizeof(double)*4)
-        newintensity = <double *>malloc(self.vnum*sizeof(double))
+      for v in prange(self.vnum, schedule='guided'):
 
-        for v in prange(self.vnum, schedule='guided'):
+        # sphere
+        num = self.zonemap.__sphere_vertices_dst(
+          self.X[v],
+          self.Y[v],
+          self.Z[v],
+          self.farl,
+          vertices,
+          dst
+        )
+        self.__reject(v, reject_stp, vertices, dst, num)
 
-          # sphere
-          num = self.zonemap.__sphere_vertices_dst(
-            self.X[v],
-            self.Y[v],
-            self.Z[v],
-            self.farl,
-            vertices,
-            dst
-          )
-          self.__reject(v, reject_stp, vertices, dst, num)
+        # connected
+        num = self.__get_connected_vertices(v, vertices)
+        self.__attract(v, attract_stp, vertices, num)
+        self.__smooth_intensity(v, alpha, newintensity, vertices, num)
 
-          # connected
-          num = self.__get_connected_vertices(v, vertices)
-          self.__attract(v, attract_stp, vertices, num)
-          self.__smooth_intensity(v, alpha, newintensity, vertices, num)
+        # opposite
+        num = self.__get_opposite_edges(v, vertices)
+        self.__unfold(v, unfold_stp, vertices, num)
+        self.__triangle(v, triangle_stp, vertices, num)
 
-          # opposite
-          num = self.__get_opposite_edges(v, vertices)
-          self.__unfold(v, unfold_stp, vertices, num)
-          self.__triangle(v, triangle_stp, vertices, num)
+      free(vertices)
+      free(dst)
 
-        free(vertices)
-        free(dst)
+    # with nogil, parallel(num_threads=self.procs):
 
-        for v in prange(self.vnum, schedule='guided'):
+      for v in prange(self.vnum, schedule='guided'):
 
-          dx = self.DX[v]
-          dy = self.DY[v]
-          dz = self.DZ[v]
+        dx = self.DX[v]
+        dy = self.DY[v]
+        dz = self.DZ[v]
 
-          nrm = sqrt(dx*dx+dy*dy+dz*dz)
+        nrm = sqrt(dx*dx+dy*dy+dz*dz)
 
-          if nrm>stp_limit:
-            dx = dx / nrm * stp_limit
-            dy = dy / nrm * stp_limit
-            dz = dz / nrm * stp_limit
+        if nrm>stp_limit:
+          dx = dx / nrm * stp_limit
+          dy = dy / nrm * stp_limit
+          dz = dz / nrm * stp_limit
 
-          if scale_intensity>0:
-            x = self.X[v] + self.I[v]*dx
-            y = self.Y[v] + self.I[v]*dy
-            z = self.Z[v] + self.I[v]*dz
-          else:
-            x = self.X[v] + self.DX[v]
-            y = self.Y[v] + self.DY[v]
-            z = self.Z[v] + self.DZ[v]
+        if scale_intensity>0:
+          x = self.X[v] + self.I[v]*dx
+          y = self.Y[v] + self.I[v]*dy
+          z = self.Z[v] + self.I[v]*dz
+        else:
+          x = self.X[v] + self.DX[v]
+          y = self.Y[v] + self.DY[v]
+          z = self.Z[v] + self.DZ[v]
 
-          self.X[v] = x
-          self.Y[v] = y
-          self.Z[v] = z
-          self.I[v] = newintensity[v]*diminish
+        self.X[v] = x
+        self.Y[v] = y
+        self.Z[v] = z
+        self.I[v] = newintensity[v]*diminish
 
-        free(newintensity)
+    free(newintensity)
 
     return 1
 
