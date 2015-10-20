@@ -52,6 +52,8 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
     self.DZ = <double *>malloc(nmax*sizeof(double))
 
+    self.DI = <double *>malloc(nmax*sizeof(double))
+
     return
 
   def __dealloc__(self):
@@ -62,19 +64,29 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
     free(self.DZ)
 
+    free(self.DI)
+
     return
 
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
   @cython.cdivision(True)
-  cdef long __smooth_intensity(self, long v1, double alpha, double *new, long *vertices, long num) nogil:
+  cdef long __smooth_intensity(
+    self,
+    long v1,
+    double alpha,
+    double *old,
+    double *new,
+    long *vertices,
+    long num
+  ) nogil:
 
-    cdef double intens = self.I[v1]
+    cdef double intens = old[v1]
 
     for k in xrange(num):
 
-      intens = intens + alpha*self.I[vertices[k]]
+      intens = intens + alpha*old[vertices[k]]
       #new[v1] += ((b-a)*alpha + a*(1.0-alpha))/(1.0-alpha)
 
     new[v1] = intens/(1.0+<double>(num*alpha))
@@ -85,7 +97,17 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.boundscheck(False)
   @cython.nonecheck(False)
   @cython.cdivision(True)
-  cdef long __reject(self, long v, double stp, long *vertices, double *dst, long num) nogil:
+  cdef long __reject(
+    self,
+    long v,
+    double *diffx,
+    double *diffy,
+    double *diffz,
+    double stp,
+    long *vertices,
+    double *dst,
+    long num
+  ) nogil:
 
     cdef long k
     cdef long k4
@@ -120,16 +142,16 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
       s = self.farl/nrm-1.0
 
-      if nrm<self.nearl:
-        s *= 2.0
+      #if nrm<self.nearl:
+        #s *= 2.0
 
       resx += dx*s
       resy += dy*s
       resz += dz*s
 
-    self.DX[v] += resx*stp
-    self.DY[v] += resy*stp
-    self.DZ[v] += resz*stp
+    diffx[v] += resx*stp
+    diffy[v] += resy*stp
+    diffz[v] += resz*stp
 
     return num
 
@@ -137,7 +159,15 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.boundscheck(False)
   @cython.nonecheck(False)
   @cython.cdivision(True)
-  cdef long __attract(self, long v1, double stp, long *vertices, long num) nogil:
+  cdef long __attract(
+    self, long v1,
+    double *diffx,
+    double *diffy,
+    double *diffz,
+    double stp,
+    long *vertices,
+    long num
+  ) nogil:
 
     cdef long v2
     cdef long k
@@ -168,9 +198,9 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
       if nrm>self.nearl:
 
         ### attract
-        self.DX[v1] += dx*s
-        self.DY[v1] += dy*s
-        self.DZ[v1] += dz*s
+        diffx[v1] += dx*s
+        diffy[v1] += dy*s
+        diffz[v1] += dz*s
 
     return 1
 
@@ -178,7 +208,16 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.boundscheck(False)
   @cython.nonecheck(False)
   @cython.cdivision(True)
-  cdef long __unfold(self, long v1, double stp, long *vertices, long num) nogil:
+  cdef long __unfold(
+    self,
+    long v1,
+    double *diffx,
+    double *diffy,
+    double *diffz,
+    double stp,
+    long *vertices,
+    long num
+  ) nogil:
 
     cdef long v2
     cdef long first
@@ -267,9 +306,9 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
       s = (1.0-fabs(crossx*cx/nrmc+crossy*cy/nrmc+crossz*cz/nrmc))*stp
 
       ## reject
-      self.DX[v1] += crossx*s
-      self.DY[v1] += crossy*s
-      self.DZ[v1] += crossz*s
+      diffx[v1] += crossx*s
+      diffy[v1] += crossy*s
+      diffz[v1] += crossz*s
 
     return 1
 
@@ -277,13 +316,22 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.boundscheck(False)
   @cython.nonecheck(False)
   @cython.cdivision(True)
-  cdef long __triangle(self, long v1, double stp, long *vertices, long num) nogil:
+  cdef long __triangle(
+    self,
+    long v1,
+    double *diffx,
+    double *diffy,
+    double *diffz,
+    double stp,
+    long *vertices,
+    long num
+  ) nogil:
 
     cdef long k
 
     for k in xrange(num):
 
-      self.__edge_vertex_force(vertices[k], v1, stp)
+      self.__edge_vertex_force(v1, diffx, diffy, diffz, vertices[k], stp)
 
     return num
 
@@ -291,7 +339,15 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.boundscheck(False)
   @cython.nonecheck(False)
   @cython.cdivision(True)
-  cdef long __edge_vertex_force(self, long he1, long v1, double stp) nogil:
+  cdef long __edge_vertex_force(
+    self,
+    long v1,
+    double *diffx,
+    double *diffy,
+    double *diffz,
+    long he1,
+    double stp
+  ) nogil:
 
     cdef long henum = self.henum
     cdef double nearl = self.nearl
@@ -316,15 +372,15 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     if nrm>0.5*sqrt(3.0)*nearl:
 
       #pass
-      self.DX[v1] += -dx/nrm*stp
-      self.DY[v1] += -dy/nrm*stp
-      self.DZ[v1] += -dz/nrm*stp
+      diffx[v1] += -dx/nrm*stp
+      diffy[v1] += -dy/nrm*stp
+      diffz[v1] += -dz/nrm*stp
 
     else:
 
-      self.DX[v1] += dx/nrm*stp
-      self.DY[v1] += dy/nrm*stp
-      self.DZ[v1] += dz/nrm*stp
+      diffx[v1] += dx/nrm*stp
+      diffy[v1] += dy/nrm*stp
+      diffz[v1] += dz/nrm*stp
 
     return 1
 
@@ -345,9 +401,6 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
     cdef long v
     cdef long i
-    cdef long is_free
-
-    cdef double intensity = 1.0
 
     cdef double x
     cdef double y
@@ -361,15 +414,8 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     cdef long *vertices
     cdef long num
     cdef double *dst
-    cdef double *newintensity = <double *>malloc(self.vnum*sizeof(double))
 
-    cdef long asize
-
-    double_array_init(self.DX, self.vnum, 0.)
-    double_array_init(self.DY, self.vnum, 0.)
-    double_array_init(self.DZ, self.vnum, 0.)
-
-    asize = self.zonemap.__get_max_sphere_count()
+    cdef long asize = self.zonemap.__get_max_sphere_count()
 
     with nogil, parallel(num_threads=self.procs):
 
@@ -377,6 +423,10 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
       dst = <double *>malloc(asize*sizeof(double)*4)
 
       for v in prange(self.vnum, schedule='guided'):
+
+        self.DX[v] = 0.0
+        self.DY[v] = 0.0
+        self.DZ[v] = 0.0
 
         # sphere
         num = self.zonemap.__sphere_vertices_dst(
@@ -387,24 +437,64 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
           vertices,
           dst
         )
-        self.__reject(v, reject_stp, vertices, dst, num)
+        self.__reject(
+          v,
+          self.DX,
+          self.DY,
+          self.DZ,
+          reject_stp,
+          vertices,
+          dst,
+          num
+        )
 
         # connected
         num = self.__get_connected_vertices(v, vertices)
-        self.__attract(v, attract_stp, vertices, num)
-        self.__smooth_intensity(v, alpha, newintensity, vertices, num)
+        self.__attract(
+          v,
+          self.DX,
+          self.DY,
+          self.DZ,
+          attract_stp,
+          vertices,
+          num
+        )
+        self.__smooth_intensity(
+          v,
+          alpha,
+          self.I,
+          self.DI,
+          vertices,
+          num
+        )
 
         # opposite
         num = self.__get_opposite_edges(v, vertices)
-        self.__unfold(v, unfold_stp, vertices, num)
-        self.__triangle(v, triangle_stp, vertices, num)
+        self.__unfold(
+          v,
+          self.DX,
+          self.DY,
+          self.DZ,
+          unfold_stp,
+          vertices,
+          num
+        )
+        self.__triangle(
+          v,
+          self.DX,
+          self.DY,
+          self.DZ,
+          triangle_stp,
+          vertices,
+          num
+        )
 
       free(vertices)
       free(dst)
 
     # with nogil, parallel(num_threads=self.procs):
 
-      for v in prange(self.vnum, schedule='guided'):
+      for v in prange(self.vnum, schedule='static'):
 
         dx = self.DX[v]
         dy = self.DY[v]
@@ -422,16 +512,14 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
           y = self.Y[v] + self.I[v]*dy
           z = self.Z[v] + self.I[v]*dz
         else:
-          x = self.X[v] + self.DX[v]
-          y = self.Y[v] + self.DY[v]
-          z = self.Z[v] + self.DZ[v]
+          x = self.X[v] + dx
+          y = self.Y[v] + dy
+          z = self.Z[v] + dz
 
         self.X[v] = x
         self.Y[v] = y
         self.Z[v] = z
-        self.I[v] = newintensity[v]*diminish
-
-    free(newintensity)
+        self.I[v] = self.DI[v]*diminish
 
     return 1
 

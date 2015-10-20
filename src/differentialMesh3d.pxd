@@ -22,19 +22,74 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
   cdef double *DZ
 
+  cdef double *DI
+
   ## FUNCTIONS
 
-  cdef long __reject(self, long v1, double stp, long *vertices, double *dst, long num) nogil
+  cdef long __reject(
+    self,
+    long v1,
+    double *dx,
+    double *dy,
+    double *dz,
+    double stp,
+    long *vertices,
+    double *dst,
+    long num
+  ) nogil
 
-  cdef long __attract(self, long v1, double stp, long *vertices, long num) nogil
+  cdef long __attract(
+    self,
+    long v1,
+    double *dx,
+    double *dy,
+    double *dz,
+    double stp,
+    long *vertices,
+    long num
+  ) nogil
 
-  cdef long __unfold(self, long v1, double stp, long *vertices, long num) nogil
+  cdef long __unfold(
+    self,
+    long v1,
+    double *dx,
+    double *dy,
+    double *dz,
+    double stp,
+    long *vertices,
+    long num
+  ) nogil
 
-  cdef long __triangle(self, long v1, double stp, long *vertices, long num) nogil
+  cdef long __triangle(
+    self,
+    long v1,
+    double *dx,
+    double *dy,
+    double *dz,
+    double stp,
+    long *vertices,
+    long num
+  ) nogil
 
-  cdef long __edge_vertex_force(self, long he1, long v1, double stp) nogil
+  cdef long __edge_vertex_force(
+    self,
+    long v1,
+    double *dx,
+    double *dy,
+    double *dz,
+    long he1,
+    double stp
+  ) nogil
 
-  cdef long __smooth_intensity(self, long v1, double alpha, double *new, long *vertices, long num) nogil
+  cdef long __smooth_intensity(
+    self,
+    long v1,
+    double alpha,
+    double *old,
+    double *new,
+    long *vertices,
+    long num
+  ) nogil
 
   ## EXTERNAL
 

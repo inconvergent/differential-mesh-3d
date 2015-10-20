@@ -598,7 +598,7 @@ cdef class Mesh3d:
     if dclen<limit2:
       return -1
 
-    if ablen<dclen*1.2:
+    if ablen<dclen*1.01:
       return -1
 
     if self.__edge_duplicate_test(db1,c,d)!=1:
