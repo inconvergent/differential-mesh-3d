@@ -28,8 +28,8 @@ python main.py \
   --diminish 0.99 \
   --triangle 0.1 \
   --stat 100 \
-  --seedFreq 100 \
-  --seedRatio 0.9 \
-  --seedType surface \
-  --obj ./data/square.obj \
+  --seedFreq 10000 \
+  --seedRatio 0.1 \
+  --seedType random \
+  --obj ./data/small_sphere.obj \
 
