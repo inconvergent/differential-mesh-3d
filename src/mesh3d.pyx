@@ -65,21 +65,16 @@ cdef class Mesh3d:
     from time import time
 
     self.nmax = nmax
-
     self.vnum = 0
-
     self.henum = 0
-
     self.fnum = 0
 
     self.zonewidth = zonewidth
 
     self.procs = procs
-
     self.state = 0
 
     self.nz = <long>(1.0 /zonewidth)
-
     self.start_time = time()
 
     if self.nz<3:
@@ -122,15 +117,10 @@ cdef class Mesh3d:
   def __dealloc__(self):
 
     free(self.X)
-
     free(self.Y)
-
     free(self.Z)
-
     free(self.HE)
-
     free(self.VHE)
-
     free(self.FHE)
 
     return

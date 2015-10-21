@@ -44,6 +44,7 @@ $python $program \
   --triangle 0.1 \
   --stat 10000 \
   --export 10000 \
-  --obj $project/data/base.obj \
+  --seedType surface \
+  --obj $project/data/square.obj \
   >> $fullPath.out
  

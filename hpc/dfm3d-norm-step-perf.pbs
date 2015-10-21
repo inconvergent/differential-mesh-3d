@@ -44,7 +44,8 @@ $python $program \
   --stat 1000 \
   --seedFreq 100 \
   --seedRatio 0.9 \
-  --obj $project/data/base.obj \
+  --seedType surface \
+  --obj $project/data/square.obj \
   >> $fullPath.out
 
 name=p-norm-step-16
@@ -69,6 +70,7 @@ $python $program \
   --stat 1000 \
   --seedFreq 100 \
   --seedRatio 0.9 \
-  --obj $project/data/base.obj \
+  --seedType surface \
+  --obj $project/data/square.obj \
   >> $fullPath.out
  

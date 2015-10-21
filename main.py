@@ -6,7 +6,6 @@ from __future__ import print_function
 from modules.utils import export_obj
 from modules.utils import load_obj
 from modules.utils import random_unit_vec
-from modules.utils import get_surface_edges
 
 
 MOVE = [0.5]*3
@@ -16,9 +15,8 @@ def main(args):
 
   from differentialMesh3d import DifferentialMesh3d
   from modules.helpers import print_stats
-  from numpy import array
-  from numpy.random import random
   from modules.helpers import make_info_str
+  from modules.utils import get_seed_selector
 
 
   reject = args.reject*args.stp
@@ -32,7 +30,6 @@ def main(args):
   out = args.out
   split_limit = args.nearl*1.2
   flip_limit = args.nearl*0.5
-  seed_ratio = args.seedRatio
   seed_freq = args.seedFreq
   vnum_max = args.vnum
 
@@ -53,10 +50,12 @@ def main(args):
   if info['minedge']<args.nearl:
     return
 
+  seed_selector = get_seed_selector(DM, args.seedType, args.seedRatio)
+
   noise = random_unit_vec(DM.get_vnum(), args.stp*1000.)
   DM.position_noise(noise, scale_intensity=-1)
 
-  alive_vertices = array(get_surface_edges(DM))
+  seeds = seed_selector()
 
   DM.optimize_edges(split_limit, flip_limit)
 
@@ -79,18 +78,14 @@ def main(args):
 
       DM.optimize_edges(split_limit, flip_limit)
 
-      ## TODO: make this more configurable.
-      ## this only works for open surfaces.
+      if len(seeds)>0:
+        DM.set_vertices_intensity(seeds, 1.0)
 
       if i%seed_freq == 0:
-        alive_vertices = array([l for l in get_surface_edges(DM) if random()<seed_ratio])
-        print('number of alive vertices: {:d}'.format(len(alive_vertices)))
-
-      if len(alive_vertices)>0:
-        DM.set_vertices_intensity(alive_vertices, 1.0)
+        seeds = seed_selector()
 
       if i%stat==0:
-        print_stats(i, DM)
+        print_stats(i, DM, meta='alive v: {:d}'.format(len(seeds)))
 
       if i%export==0:
         export_obj(
@@ -126,4 +121,3 @@ if __name__ == '__main__' :
   else:
 
     main(args)
-

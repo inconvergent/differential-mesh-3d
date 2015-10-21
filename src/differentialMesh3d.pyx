@@ -47,11 +47,8 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   def __cinit__(self, long nmax, *arg, **args):
 
     self.DX = <double *>malloc(nmax*sizeof(double))
-
     self.DY = <double *>malloc(nmax*sizeof(double))
-
     self.DZ = <double *>malloc(nmax*sizeof(double))
-
     self.DI = <double *>malloc(nmax*sizeof(double))
 
     return
@@ -59,11 +56,8 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   def __dealloc__(self):
 
     free(self.DX)
-
     free(self.DY)
-
     free(self.DZ)
-
     free(self.DI)
 
     return
@@ -106,10 +100,13 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     double stp,
     long *vertices,
     double *dst,
-    long num
+    long num,
+    long *connected,
+    long cnum
   ) nogil:
 
     cdef long k
+    cdef long i
     cdef long k4
     cdef long neigh
 
@@ -118,6 +115,8 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     cdef double dz
     cdef double nrm
     cdef double s
+
+    cdef long cont
 
     cdef double resx = 0.0
     cdef double resy = 0.0
@@ -130,9 +129,18 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
       if neigh == v:
         continue
 
+      cont = 1
+
+      for i in xrange(cnum):
+        if neigh == connected[i]:
+          cont = -1
+          break
+
+      if cont<0:
+        continue
+
       k4 = k*4
       nrm = dst[k4+3]
-
 
       if nrm>self.farl or nrm<=1e-9:
         continue
@@ -149,8 +157,6 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
       resx += dx*s
       resy += dy*s
       resz += dz*s
-
-    #print('reject', max((abs(resx*stp), abs(resy*stp), abs(resz*stp))))
 
     diffx[v] += resx*stp
     diffy[v] += resy*stp
@@ -191,8 +197,6 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
       dz = self.Z[v2]-self.Z[v1]
       nrm = sqrt(dx*dx+dy*dy+dz*dz)
 
-      #if nrm<0.:
-        #continue
       if nrm<1e-9:
         continue
 
@@ -200,14 +204,58 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
       if nrm>self.nearl:
 
-        #print('attract', max((abs(dx*s), abs(dy*s), abs(dz*s))))
-
         ### attract
         diffx[v1] += dx*s
         diffy[v1] += dy*s
         diffz[v1] += dz*s
 
     return 1
+
+  #@cython.wraparound(False)
+  #@cython.boundscheck(False)
+  #@cython.nonecheck(False)
+  #@cython.cdivision(True)
+  #cdef long __attract(
+    #self, long v1,
+    #double *diffx,
+    #double *diffy,
+    #double *diffz,
+    #double stp,
+    #long *vertices,
+    #long num
+  #) nogil:
+
+    #cdef long v2
+    #cdef long k
+
+    #cdef double midx = 0.0
+    #cdef double midy = 0.0
+    #cdef double midz = 0.0
+
+    #for k in xrange(num):
+
+      #v2 = vertices[k]
+      #midx += self.X[v2]
+      #midy += self.Y[v2]
+      #midz += self.Z[v2]
+
+    #midx = midx/<double>(num) - self.X[v1]
+    #midy = midy/<double>(num) - self.Y[v1]
+    #midz = midz/<double>(num) - self.Z[v1]
+
+    #cdef double nrm = sqrt(midx*midx+midy*midy+midz*midz)
+
+    #if nrm<1e-9:
+
+      #return -1
+
+    #cdef double s = stp/nrm
+
+    #diffx[v1] += midx*s
+    #diffy[v1] += midy*s
+    #diffz[v1] += midz*s
+
+    #return 1
 
   @cython.wraparound(False)
   @cython.boundscheck(False)
@@ -319,7 +367,6 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
       resy += crossy*s
       resz += crossz*s
 
-    #print('unfold', max((abs(resx), abs(resy), abs(resz))))
     diffx[v1] += resx
     diffy[v1] += resy
     diffz[v1] += resz
@@ -426,25 +473,27 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     cdef double stp_limit = self.nearl*0.3
 
     cdef long *vertices
+    cdef long *connected
     cdef long num
+    cdef long cnum
     cdef double *dst
 
     cdef long asize = self.zonemap.__get_max_sphere_count()
 
     with nogil, parallel(num_threads=self.procs):
-    #if True:
 
       vertices = <long *>malloc(asize*sizeof(long))
+      connected = <long *>malloc(asize*sizeof(long))
       dst = <double *>malloc(asize*sizeof(double)*4)
 
       for v in prange(self.vnum, schedule='guided'):
-      #for v in xrange(self.vnum):
 
         self.DX[v] = 0.0
         self.DY[v] = 0.0
         self.DZ[v] = 0.0
 
-        # sphere
+        # sphere/connected
+        cnum = self.__get_connected_vertices(v, connected)
         num = self.zonemap.__sphere_vertices_dst(
           self.X[v],
           self.Y[v],
@@ -461,27 +510,28 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
           reject_stp,
           vertices,
           dst,
-          num
+          num,
+          connected,
+          cnum
         )
 
         # connected
-        num = self.__get_connected_vertices(v, vertices)
         self.__attract(
           v,
           self.DX,
           self.DY,
           self.DZ,
           attract_stp,
-          vertices,
-          num
+          connected,
+          cnum
         )
         self.__smooth_intensity(
           v,
           alpha,
           self.I,
           self.DI,
-          vertices,
-          num
+          connected,
+          cnum
         )
 
         # opposite
@@ -506,10 +556,10 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
         )
 
       free(vertices)
+      free(connected)
       free(dst)
 
       for v in prange(self.vnum, schedule='static'):
-      #for v in xrange(self.vnum):
 
         dx = self.DX[v]
         dy = self.DY[v]

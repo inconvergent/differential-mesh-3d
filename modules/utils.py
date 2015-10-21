@@ -147,7 +147,7 @@ def export_obj(dm, obj_name, fn, write_intensity=False, meta=False):
 
     print('done.')
 
-def get_surface_edges(dm):
+def get_surface_vertices(dm):
 
   res = []
 
@@ -159,4 +159,30 @@ def get_surface_edges(dm):
       res.append(d['last'])
 
   return list(set(res))
+
+def get_seed_selector(dm, t, sr):
+  from numpy import array
+  from numpy import arange
+  from numpy.random import random
+
+  if t == 'surface':
+
+    def f():
+      vertices = array(get_surface_vertices(dm))
+      rm = (random(size=len(vertices))<sr).nonzero()[0]
+      if len(rm)<1:
+        return array([])
+      return vertices[rm]
+
+  elif t == 'random':
+
+    def f():
+      vn = dm.get_vnum()
+      vertices = arange(vn)
+      rm = (random(size=vn)<sr).nonzero()[0]
+      if len(rm)<1:
+        return array([])
+      return vertices[rm]
+
+  return f
 

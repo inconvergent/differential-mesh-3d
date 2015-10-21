@@ -13,15 +13,11 @@ from zonemap3d cimport Zonemap3d
 cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
   cdef double nearl
-
   cdef double farl
 
   cdef double *DX
-
   cdef double *DY
-
   cdef double *DZ
-
   cdef double *DI
 
   ## FUNCTIONS
@@ -35,7 +31,9 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     double stp,
     long *vertices,
     double *dst,
-    long num
+    long num,
+    long *connected,
+    long cnum
   ) nogil
 
   cdef long __attract(
@@ -46,7 +44,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     double *dz,
     double stp,
     long *vertices,
-    long num
+    long num,
   ) nogil
 
   cdef long __unfold(

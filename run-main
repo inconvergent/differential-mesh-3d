@@ -22,12 +22,14 @@ python main.py \
   --nearl 0.0028 \
   --farl 0.04 \
   --stp 1.0e-7 \
-  --attract 0.2 \
+  --attract 0.9 \
   --reject 1.0 \
   --unfold 0.1 \
+  --diminish 0.99 \
   --triangle 0.1 \
   --stat 100 \
   --seedFreq 100 \
   --seedRatio 0.9 \
-  --obj ./data/base.obj \
+  --seedType surface \
+  --obj ./data/square.obj \
 

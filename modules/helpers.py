@@ -102,6 +102,11 @@ def get_args():
     default=1.0
   )
   parser.add_argument(
+    '--seedType',
+    type=str,
+    default='random'
+  )
+  parser.add_argument(
     '--export',
     type=int,
     default=1000
@@ -126,20 +131,26 @@ def make_info_str(args):
   return s
 
 
-def print_stats(steps,dm):
+def print_stats(steps,dm, meta=False):
 
   from time import strftime
   from time import time
 
+  if isinstance(meta, str):
+    meta = ' | {:s}'.format(meta)
+  else:
+    meta = ''
+
   print(
-    '{:s} | steps: {:d} time: {:.5f} vnum: {:d} henum: {:d} fnum: {:d}'
+    '{:s} | stp: {:d} sec: {:.2f} v: {:d} e: {:d} f: {:d}{:s}'
       .format(
       strftime('%d/%m/%y %H:%M:%S'),
       steps,
       time()-dm.get_start_time(),
       dm.get_vnum(),
       dm.get_henum(),
-      dm.get_fnum()
+      dm.get_fnum(),
+      meta
     )
   )
 

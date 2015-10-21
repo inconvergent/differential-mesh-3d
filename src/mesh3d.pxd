@@ -22,37 +22,26 @@ ctypedef s_HE sHE
 cdef class Mesh3d:
 
   cdef long nmax
-
   cdef long vnum
-
   cdef long henum
-
   cdef long fnum
 
   cdef long nz
-
   cdef double zonewidth
 
   cdef long procs
-
   cdef long state
-
   cdef double start_time
 
   ## ARRAYS
 
   cdef double *X
-
   cdef double *Y
-
   cdef double *Z
-
   cdef double *I
 
   cdef sHE *HE
-
   cdef long *VHE
-
   cdef long *FHE
 
   cdef Zonemap3d zonemap
