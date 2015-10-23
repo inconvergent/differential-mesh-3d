@@ -570,6 +570,7 @@ cdef class Mesh3d:
     cdef long c = self.HE[ca1].first
     cdef long d = self.HE[db1].first
 
+
     cdef double limit2 = limit*limit
 
     #cdef double ablen = (cpow(self.X[a]-self.X[b],2)+
@@ -589,6 +590,21 @@ cdef class Mesh3d:
       return -1
 
     if ablen<dclen*1.01:
+      return -1
+
+    cdef double mx = (self.X[a] - self.X[b])*0.5
+    cdef double my = (self.Y[a] - self.Y[b])*0.5
+    cdef double mz = (self.Z[a] - self.Z[b])*0.5
+
+    cdef double mcx = self.X[c] - mx
+    cdef double mcy = self.Y[c] - my
+    cdef double mcz = self.Z[c] - mz
+
+    cdef double mdx = self.X[d] - mx
+    cdef double mdy = self.Y[d] - my
+    cdef double mdz = self.Z[d] - mz
+
+    if fabs(mcx*mdx + mcy*mdy + mcz*mdz)<0.4:
       return -1
 
     if self.__edge_duplicate_test(db1,c,d)!=1:

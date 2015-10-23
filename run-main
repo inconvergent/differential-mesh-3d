@@ -29,7 +29,7 @@ python main.py \
   --triangle 0.1 \
   --stat 100 \
   --seedFreq 10000 \
-  --seedRatio 0.1 \
-  --seedType random \
-  --obj ./data/small_sphere.obj \
+  --seedRatio 0.9 \
+  --seedType surface \
+  --obj ./data/square.obj \
 
