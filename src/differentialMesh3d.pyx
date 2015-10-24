@@ -586,6 +586,10 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
         self.Z[v] = z
         self.I[v] = self.DI[v]*diminish
 
+    with nogil:
+      for v in xrange(self.vnum):
+        self.zonemap.__update_v(v)
+
     return 1
 
   @cython.wraparound(False)
