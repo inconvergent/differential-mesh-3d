@@ -13,8 +13,7 @@ This three dimensional extension is something else entirely ...
 
 ## Prerequisites
 
-In order for this code to run you must first download and install these two
-repositories:
+In order for this code to run you must first download and install:
 
 *    `zonemap3d`: https://github.com/inconvergent/zonemap-3d
 
@@ -30,10 +29,10 @@ The code also depends on:
 
 ## Running it on Linux (Ubuntu)
 
-To install the libraries locally, run `run-install`. I have only tested this
+To install the libraries locally, run `install`. I have only tested this
 code in Ubuntu 14.04 LTS, but my guess is that it should work on most other
-platforms platforms as well.  However i know that the scripted install in
-`run-install` will not work in Windows
+platforms as well.  However i know that the scripted install in
+`install` will not work in Windows
 
 ## Running it on Windows?
 
