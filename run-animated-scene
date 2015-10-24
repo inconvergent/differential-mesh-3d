@@ -4,7 +4,7 @@ set -e
 source settings
 here=$(pwd)
 name="$1"
-run_script="$here/make_scene.py"
+run_script="$here/make_animated_scene.py"
 
 if [ -z "$name" ]
 then

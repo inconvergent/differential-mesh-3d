@@ -570,13 +570,7 @@ cdef class Mesh3d:
     cdef long c = self.HE[ca1].first
     cdef long d = self.HE[db1].first
 
-
     cdef double limit2 = limit*limit
-
-    #cdef double ablen = (cpow(self.X[a]-self.X[b],2)+
-                            #cpow(self.Y[a]-self.Y[b],2)+
-                            #cpow(self.Z[a]-self.Z[b],2))
-
     cdef double ablen = cpow(self.HE[the1].length,2.0)
 
     if ablen<limit2:
@@ -604,7 +598,10 @@ cdef class Mesh3d:
     cdef double mdy = self.Y[d] - my
     cdef double mdz = self.Z[d] - mz
 
-    if fabs(mcx*mdx + mcy*mdy + mcz*mdz)<0.4:
+    ## don't flip edge if the "curvature" of the two connected faces is too great
+    if fabs(mcx*mdx + mcy*mdy + mcz*mdz)/ (
+        sqrt(mcx*mcx+mcy*mcy+mcz*mcz) *
+        sqrt(mdx*mdx+mdy*mdy+mdz*mdz))<0.8:
       return -1
 
     if self.__edge_duplicate_test(db1,c,d)!=1:

@@ -14,13 +14,31 @@ echo "running simulation using name: $name."
 rm -f "$name"*.obj
 rm -f "$name"*.x
 
+#python main.py \
+  #--out "$name" \
+  #--procs 6 \
+  #--vnum 100000000 \
+  #--nearl 0.0028 \
+  #--farl 0.04 \
+  #--stp 1.0e-7 \
+  #--attract 0.9 \
+  #--reject 1.0 \
+  #--unfold 0.1 \
+  #--diminish 0.99 \
+  #--triangle 0.1 \
+  #--stat 100 \
+  #--seedFreq 1000 \
+  #--seedRatio 0.9 \
+  #--seedType surface \
+  #--obj ./data/square.obj \
+
 
 python main.py \
   --out "$name" \
   --procs 6 \
   --vnum 100000000 \
   --nearl 0.0028 \
-  --farl 0.04 \
+  --farl 0.03 \
   --stp 1.0e-7 \
   --attract 0.9 \
   --reject 1.0 \
@@ -28,8 +46,8 @@ python main.py \
   --diminish 0.99 \
   --triangle 0.1 \
   --stat 100 \
-  --seedFreq 10000 \
-  --seedRatio 0.9 \
-  --seedType surface \
-  --obj ./data/square.obj \
+  --seedFreq 1000 \
+  --seedRatio 0.2 \
+  --seedType random \
+  --obj ./data/small_sphere.obj \
 
