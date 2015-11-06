@@ -16,6 +16,7 @@ This three dimensional extension is something else entirely ...
 In order for this code to run you must first download and install:
 
 *    `zonemap3d`: https://github.com/inconvergent/zonemap-3d
+*    `dddUtils`: https://github.com/inconvergent/ddd-utils (use `install-python3`)
 
 ## Other Dependencies
 
