@@ -3,21 +3,21 @@
 
 from __future__ import print_function
 
-from modules.utils import export_obj
-from modules.utils import load_obj
-from modules.utils import random_unit_vec
-
-
-MOVE = [0.5]*3
 
 
 def main(args):
+
+  from numpy import zeros
 
   from differentialMesh3d import DifferentialMesh3d
   from modules.helpers import print_stats
   from modules.helpers import make_info_str
   from modules.utils import get_seed_selector
+  #from modules.utils import random_unit_vec
 
+  from dddUtils.ioOBJ import load_move_scale as load_obj
+  from dddUtils.ioOBJ import export as export_obj
+  from dddUtils.ddd import random_unit_vec
 
   reject = args.reject*args.stp
   attract = args.attract*args.stp
@@ -32,21 +32,25 @@ def main(args):
   flip_limit = args.nearl*0.5
   seed_freq = args.seedFreq
   vnum_max = args.vnum
+  nmax = args.nmax
 
   DM = DifferentialMesh3d(
-    nmax = args.nmax,
+    nmax = nmax,
     zonewidth = args.farl,
     nearl = args.nearl,
     farl = args.farl,
     procs = args.procs
   )
 
+  np_verts = zeros((nmax,3),'float')
+  np_tris = zeros((nmax,3),'int')
+
   data = load_obj(
     args.obj,
-    sx = [args.scale]*3,
-    mx = MOVE
+    s = args.scale,
+    mx = [0.5]*3
   )
-  info = DM.initiate_faces(data['vertices'], data['faces'])
+  info = DM.initiate_faces(list(data['vertices']), list(data['faces']))
   if info['minedge']<args.nearl:
     return
 
@@ -88,11 +92,15 @@ def main(args):
         print_stats(i, DM, meta='alive v: {:d}'.format(len(seeds)))
 
       if i%export==0:
+
+        vnum = DM.np_get_vertices(np_verts)
+        tnum = DM.np_get_triangles_vertices(np_tris)
+
         export_obj(
-          DM,
           'thing_mesh',
           '{:s}_{:012d}.obj'.format(out, i),
-          write_intensity=False,
+          verts = np_verts[:vnum,:],
+          tris = np_tris[:tnum,:],
           meta=make_info_str(args)
         )
 
