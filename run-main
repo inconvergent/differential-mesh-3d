@@ -27,7 +27,8 @@ python main.py \
   --diminish 0.99 \
   --triangle 0.1 \
   --stat 100 \
-  --seedFreq 1000 \
+  --export 100 \
+  --seedFreq 500 \
   --seedRatio 0.9 \
   --seedType surface \
   --obj ./data/square.obj \
