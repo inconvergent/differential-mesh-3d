@@ -22,11 +22,15 @@ In order for this code to run you must first download and install:
 
 The code also depends on:
 
-*    `blender` (must be installed, and the path added to `./settings` files)
 *    `numpy`
 *    `scipy`
 *    `cython`
 *    `python-cairo` (do not install with pip, this generally does not work)
+
+## Models and rendering
+
+Utilities to render the resulting obj files (in `./res/`) have been moved to
+https://github.com/inconvergent/ddd-utils/tree/master/blender-tools
 
 ## Running it on Linux (Ubuntu)
 
