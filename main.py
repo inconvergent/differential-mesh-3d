@@ -17,7 +17,7 @@ def main(args):
 
   from dddUtils.ioOBJ import load_move_scale as load_obj
   from dddUtils.ioOBJ import export as export_obj
-  from dddUtils.ddd import random_unit_vec
+  from dddUtils.random import random_unit_vec
 
   reject = args.reject*args.stp
   attract = args.attract*args.stp
