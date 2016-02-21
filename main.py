@@ -19,6 +19,10 @@ def main(args):
   from dddUtils.ioOBJ import export as export_obj
   from dddUtils.random import random_unit_vec
 
+  from fn import Fn
+
+  fn = Fn(prefix='./res/')
+
   reject = args.reject*args.stp
   attract = args.attract*args.stp
   unfold = args.unfold*args.stp
@@ -98,7 +102,7 @@ def main(args):
 
         export_obj(
           'thing_mesh',
-          '{:s}_{:012d}.obj'.format(out, i),
+          fn.name() + '.obj',
           verts = np_verts[:vnum,:],
           tris = np_tris[:tnum,:],
           meta=make_info_str(args)
