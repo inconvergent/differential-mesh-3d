@@ -106,9 +106,9 @@ def get_args():
     default='random'
   )
   parser.add_argument(
-    '--export',
+    '--exportLeap',
     type=int,
-    default=1000
+    default=100
   )
   parser.add_argument(
     '--out',

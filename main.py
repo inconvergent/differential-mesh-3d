@@ -21,7 +21,7 @@ def main(args):
 
   from fn import Fn
 
-  fn = Fn(prefix='./res/')
+  fn = Fn(prefix=args.out+'/')
 
   reject = args.reject*args.stp
   attract = args.attract*args.stp
@@ -30,8 +30,7 @@ def main(args):
   diminish = args.diminish
   smooth = args.smooth
   stat = args.stat
-  export = args.export
-  out = args.out
+  export_leap = args.exportLeap
   split_limit = args.nearl*1.2
   flip_limit = args.nearl*0.5
   seed_freq = args.seedFreq
@@ -57,6 +56,8 @@ def main(args):
   info = DM.initiate_faces(list(data['vertices']), list(data['faces']))
   if info['minedge']<args.nearl:
     return
+
+  num_verts = 0
 
   seed_selector = get_seed_selector(DM, args.seedType, args.seedRatio)
 
@@ -95,7 +96,8 @@ def main(args):
       if i%stat==0:
         print_stats(i, DM, meta='alive v: {:d}'.format(len(seeds)))
 
-      if i%export==0:
+      if abs(num_verts-DM.get_vnum())>export_leap:
+        num_verts = DM.get_vnum()
 
         vnum = DM.np_get_vertices(np_verts)
         tnum = DM.np_get_triangles_vertices(np_tris)
@@ -133,3 +135,4 @@ if __name__ == '__main__' :
   else:
 
     main(args)
+

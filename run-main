@@ -26,7 +26,7 @@ python main.py \
   --diminish 0.99 \
   --triangle 0.1 \
   --stat 100 \
-  --export 100 \
+  --exportLeap 100 \
   --seedFreq 500 \
   --seedRatio 0.9 \
   --seedType surface \

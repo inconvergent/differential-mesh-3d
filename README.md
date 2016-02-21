@@ -17,6 +17,8 @@ In order for this code to run you must first download and install:
 
 *    `zonemap3d`: https://github.com/inconvergent/zonemap-3d
 *    `dddUtils`: https://github.com/inconvergent/ddd-utils (use `install-python3`)
+*    `fn`: https://github.com/inconvergent/fn (only used to generate file
+       names, you can skip this by changing file names in `main.py`)
 
 ## Other Dependencies
 
