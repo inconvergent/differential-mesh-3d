@@ -13,7 +13,7 @@ echo "running simulation using name: $name."
 rm -f "$name"*.obj
 rm -f "$name"*.x
 
-python main.py \
+./main.py \
   --out "$name" \
   --procs 6 \
   --vnum 100000000 \
@@ -33,7 +33,7 @@ python main.py \
   --obj ./data/square.obj \
 
 
-#python main.py \
+#./main.py \
   #--out "$name" \
   #--procs 6 \
   #--vnum 100000000 \

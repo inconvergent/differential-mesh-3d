@@ -1,7 +1,5 @@
 # Differential Mesh 3d
 
-<!--![ani](/img/ani.gif?raw=true "animation")-->
-
 ![img](/img/img.png?raw=true "img")
 
 
@@ -16,8 +14,8 @@ This three dimensional extension is something else entirely ...
 In order for this code to run you must first download and install:
 
 *    `zonemap3d`: https://github.com/inconvergent/zonemap-3d
-*    `dddUtils`: https://github.com/inconvergent/ddd-utils (use `install-python3`)
-*    `fn`: https://github.com/inconvergent/fn (only used to generate file
+*    `iutils`: https://github.com/inconvergent/iutils
+*    `fn`: https://github.com/inconvergent/fn-python3 (only used to generate file
        names, you can skip this by changing file names in `main.py`)
 
 ## Other Dependencies
@@ -29,30 +27,14 @@ The code also depends on:
 *    `cython`
 *    `python-cairo` (do not install with pip, this generally does not work)
 
-## Models and rendering
-
-Utilities to render the resulting obj files (in `./res/`) have been moved to
-https://github.com/inconvergent/ddd-utils/tree/master/blender-tools
-
 ## Running it on Linux (Ubuntu)
 
 To install the libraries locally, run `install`. I have only tested this
 code in Ubuntu 14.04 LTS, but my guess is that it should work on most other
-platforms as well.  However i know that the scripted install in
-`install` will not work in Windows
+platforms as well.
 
-## Running it on Windows?
+Run using the `main-run` script (asdf is a prefix for the generated files and
+can be chosen freely):
 
-The code will probably work just fine under Windows, but I'm not sure how to
-install it. (Let me know if you get it working!)
-
-## Similar code
-
-If you find this alorithm insteresting you might also want to check out:
-
-*    https://github.com/inconvergent/differential-line
-*    https://github.com/inconvergent/differential-mesh
-
------------
-http://inconvergent.net
+    ./main-run asdf
 

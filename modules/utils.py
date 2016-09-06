@@ -5,7 +5,7 @@ def get_surface_vertices(dm):
 
   res = []
 
-  for he in xrange(dm.get_henum()):
+  for he in range(dm.get_henum()):
     e = dm.is_surface_edge(he)
     if e>0:
       d = dm.get_edge_dict(he)

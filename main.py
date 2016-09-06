@@ -1,8 +1,5 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
-
-from __future__ import print_function
-
 
 
 def main(args):
@@ -15,9 +12,9 @@ def main(args):
   from modules.utils import get_seed_selector
   #from modules.utils import random_unit_vec
 
-  from dddUtils.ioOBJ import load_move_scale as load_obj
-  from dddUtils.ioOBJ import export as export_obj
-  from dddUtils.random import random_unit_vec
+  from iutils.ioOBJ import load_move_scale as load_obj
+  from iutils.ioOBJ import export as export_obj
+  from iutils.random import random_unit_vec
 
   from fn import Fn
 
@@ -68,10 +65,10 @@ def main(args):
 
   DM.optimize_edges(split_limit, flip_limit)
 
-  for he in xrange(DM.get_henum()):
+  for he in range(DM.get_henum()):
     DM.set_edge_intensity(he, 1.0)
 
-  for i in xrange(args.itt):
+  for i in range(args.itt):
 
     try:
 
