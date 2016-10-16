@@ -1,5 +1,37 @@
 # -*- coding: utf-8 -*-
 
+def make_info_str(args):
+  s = ''
+  for k in vars(args):
+    s += '# ' + str(k) + ': ' + str(getattr(args,k)) + '\n'
+  return s
+
+
+def print_stats(steps,dm, meta=False):
+
+  from time import strftime
+  from time import time
+
+  if isinstance(meta, str):
+    meta = ' | {:s}'.format(meta)
+  else:
+    meta = ''
+
+  print(
+    '{:s} | stp: {:d} sec: {:.2f} v: {:d} e: {:d} f: {:d}{:s}'
+      .format(
+      strftime('%d/%m/%y %H:%M:%S'),
+      steps,
+      time()-dm.get_start_time(),
+      dm.get_vnum(),
+      dm.get_henum(),
+      dm.get_fnum(),
+      meta
+    )
+  )
+
+  return
+
 
 def get_surface_vertices(dm):
 
