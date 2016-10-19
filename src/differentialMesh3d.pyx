@@ -360,7 +360,8 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
       crossy /= nrm
       crossz /= nrm
 
-      s = (1.0-fabs(crossx*cx/nrmc+crossy*cy/nrmc+crossz*cz/nrmc))*stp
+      # s = (1.0-fabs(crossx*cx/nrmc+crossy*cy/nrmc+crossz*cz/nrmc))*stp
+      s = stp
 
       ## reject
       resx += crossx*s
@@ -545,15 +546,15 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
           vertices,
           num
         )
-        self.__triangle(
-          v,
-          self.DX,
-          self.DY,
-          self.DZ,
-          triangle_stp,
-          vertices,
-          num
-        )
+        # self.__triangle(
+        #   v,
+        #   self.DX,
+        #   self.DY,
+        #   self.DZ,
+        #   triangle_stp,
+        #   vertices,
+        #   num
+        # )
 
       free(vertices)
       free(connected)

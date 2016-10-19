@@ -3,25 +3,36 @@
 
 from numpy import zeros
 
+NMAX = 10000000
+
 PROCS = 4
 STP = 1.0e-6
-NEARL = 0.003
-FARL = 0.05
-REJECT = 0.5*STP
+
+NEARL = 0.001
+FARL = 0.006
+ZONEWIDTH = 0.004
+
+REJECT = 1.0*STP
 ATTRACT = 0.9*STP
-UNFOLD = 0.1*STP
-TRIANGLE = 0.01*STP
+UNFOLD = 0.0*STP
+TRIANGLE = 0.0*STP
+
 DIMINISH = 0.99
-SMOOTH = 0.08
-STAT = 100
-SPLIT_LIMIT = NEARL*1.2
+SMOOTH = 0.005
+
+SPLIT_LIMIT = NEARL*0.9
 FLIP_LIMIT = NEARL*0.5
-SEED_FREQ = 500
-NMAX = 10000000
+
 OBJ = './data/square.obj'
-SEEDTYPE = 'random'
-SEEDRATIO = 1.0
-SCALE = 0.02
+
+SEEDTYPE = 'surface'
+SEEDRATIO = 0.2
+SEED_FREQ = 200
+
+SCALE = 0.003
+
+EXPORT = 1000
+STAT = 100
 
 from OpenGL.GL import glNewList
 from OpenGL.GL import glBegin
@@ -33,8 +44,10 @@ from OpenGL.GL import glVertex3f
 from OpenGL.GL import GL_COMPILE
 from OpenGL.GL import GL_TRIANGLES
 
-from numpy.random import random
 from numpy import cross
+from numpy import array
+from numpy import mean
+from numpy import concatenate
 from numpy.linalg import norm
 
 def show_geometry(np_verts, np_tris, tnum, vnum):
@@ -42,7 +55,11 @@ def show_geometry(np_verts, np_tris, tnum, vnum):
   glBegin(GL_TRIANGLES)
   glColor3f(1, 1, 1)
 
-  for vv in np_verts[np_tris[:tnum,:],:]:
+  coords = np_verts[np_tris[:tnum,:],:]
+  mi = coords[:, :, 0].min(axis=0)
+  ma = coords[:, :, 0].max(axis=0)
+
+  for vv in coords:
     v1 = vv[2, :] - vv[0, :]
     v2 = vv[1, :] - vv[0, :]
     n = cross(v2, v1).squeeze()
@@ -55,30 +72,42 @@ def show_geometry(np_verts, np_tris, tnum, vnum):
   glEnd()
   glEndList()
 
+  # return array((-1,-1,-1,1,1,1), 'float')
+  return concatenate((mi,ma))
+
+def move_scale(verts, s=1.0):
+  mm = mean(verts, axis=0)
+  verts[:, :] -= mm
+  verts[:, :] *= s
+
 
 def main():
 
   from differentialMesh3d import DifferentialMesh3d
   from modules.utils import print_stats
   from modules.utils import get_seed_selector
+  from iutils.ioOBJ import export
 
   from iutils.ioOBJ import load_move_scale as load_obj
   from iutils.random import random_unit_vec
 
+  from fn import Fn
+  fn = Fn(prefix='./res/', postfix='.obj')
+
 
   DM = DifferentialMesh3d(
-      nmax = NMAX,
-      zonewidth = FARL,
-      nearl = NEARL,
-      farl = FARL,
-      procs = PROCS
+      nmax=NMAX,
+      zonewidth=ZONEWIDTH,
+      nearl=NEARL,
+      farl=FARL,
+      procs=PROCS
       )
 
   data = load_obj(
-    OBJ,
-    s = SCALE,
-    mx = [0.5]*3
-  )
+      OBJ,
+      s = SCALE,
+      mx = [0.5]*3
+      )
   info = DM.initiate_faces(list(data['vertices']), list(data['faces']))
   if info['minedge']<NEARL:
     return
@@ -119,15 +148,26 @@ def main():
         if i%SEED_FREQ == 0:
           seeds = seed_selector()
 
-        if i%STAT==0:
-          print_stats(i, DM, meta='alive v: {:d}'.format(len(seeds)))
+        # if i%STAT==0:
+        #   print_stats(i, DM, meta='alive v: {:d}'.format(len(seeds)))
 
-        num_verts = DM.get_vnum()
-        vnum = DM.np_get_vertices(np_verts)
-        tnum = DM.np_get_triangles_vertices(np_tris)
+        # if i%EXPORT==0:
+        #   vnum = DM.np_get_vertices(np_verts)
+        #   tnum = DM.np_get_triangles_vertices(np_tris)
+        #   move_scale(np_verts[:vnum,:], s=1000)
+        #   export(
+        #       'thing_mesh',
+        #       fn.name(),
+        #       verts=np_verts[:vnum,:],
+        #       tris=np_tris[:tnum,:]
+        #       )
 
-        show_geometry(np_verts, np_tris, tnum, vnum)
-      yield i
+      # num_verts = DM.get_vnum()
+      vnum = DM.np_get_vertices(np_verts)
+      tnum = DM.np_get_triangles_vertices(np_tris)
+      move_scale(np_verts[:vnum,:])
+      box = show_geometry(np_verts, np_tris, tnum, vnum)
+      yield box
 
   from view3d import View3d
   v3d = View3d(1000)

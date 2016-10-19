@@ -52,7 +52,6 @@ def get_seed_selector(dm, t, sr):
   from numpy.random import random
 
   if t == 'surface':
-
     def f():
       vertices = array(get_surface_vertices(dm))
       rm = (random(size=len(vertices))<sr).nonzero()[0]
@@ -61,7 +60,6 @@ def get_seed_selector(dm, t, sr):
       return vertices[rm]
 
   elif t == 'random':
-
     def f():
       vn = dm.get_vnum()
       vertices = arange(vn)
