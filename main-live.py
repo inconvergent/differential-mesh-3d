@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
+from time import time
 from numpy import zeros
 
 NMAX = 10000000
@@ -9,7 +10,7 @@ PROCS = 4
 STP = 1.0e-6
 
 NEARL = 0.001
-FARL = 0.006
+FARL = 0.004
 ZONEWIDTH = 0.004
 
 REJECT = 1.0*STP
@@ -18,7 +19,7 @@ UNFOLD = 0.0*STP
 TRIANGLE = 0.0*STP
 
 DIMINISH = 0.99
-SMOOTH = 0.005
+SMOOTH = 0.01
 
 SPLIT_LIMIT = NEARL*0.9
 FLIP_LIMIT = NEARL*0.5
@@ -26,13 +27,14 @@ FLIP_LIMIT = NEARL*0.5
 OBJ = './data/square.obj'
 
 SEEDTYPE = 'surface'
-SEEDRATIO = 0.2
-SEED_FREQ = 200
+SEEDRATIO = 1.0
+SEED_FREQ = 2
 
 SCALE = 0.003
 
 EXPORT = 1000
 STAT = 100
+DRAW = 100
 
 from OpenGL.GL import glNewList
 from OpenGL.GL import glBegin
@@ -72,7 +74,6 @@ def show_geometry(np_verts, np_tris, tnum, vnum):
   glEnd()
   glEndList()
 
-  # return array((-1,-1,-1,1,1,1), 'float')
   return concatenate((mi,ma))
 
 def move_scale(verts, s=1.0):
@@ -122,14 +123,27 @@ def main():
   for he in range(DM.get_henum()):
     DM.set_edge_intensity(he, 1.0)
 
+  np_verts = zeros((NMAX,3),'float')
+  np_tris = zeros((NMAX,3),'int')
+
+  def do_export():
+    vnum = DM.np_get_vertices(np_verts)
+    tnum = DM.np_get_triangles_vertices(np_tris)
+    move_scale(np_verts[:vnum,:], s=1000)
+    export(
+        'thing_mesh',
+        fn.name(),
+        verts=np_verts[:vnum,:],
+        tris=np_tris[:tnum,:]
+        )
+
   def geometry_generator():
     seeds = seed_selector()
     i = 0
-    np_verts = zeros((NMAX,3),'float')
-    np_tris = zeros((NMAX,3),'int')
+    box = array((-1,-1,-1,1,1), 'float')
     while True:
-      for k in range(100):
-        i += 1
+      i += 1
+      for _ in range(50):
         DM.optimize_position(
             REJECT,
             ATTRACT,
@@ -148,30 +162,24 @@ def main():
         if i%SEED_FREQ == 0:
           seeds = seed_selector()
 
-        # if i%STAT==0:
-        #   print_stats(i, DM, meta='alive v: {:d}'.format(len(seeds)))
+        if i%STAT==0:
+          print_stats(i, DM, meta='alive v: {:d}'.format(len(seeds)))
 
         # if i%EXPORT==0:
-        #   vnum = DM.np_get_vertices(np_verts)
-        #   tnum = DM.np_get_triangles_vertices(np_tris)
-        #   move_scale(np_verts[:vnum,:], s=1000)
-        #   export(
-        #       'thing_mesh',
-        #       fn.name(),
-        #       verts=np_verts[:vnum,:],
-        #       tris=np_tris[:tnum,:]
-        #       )
+        # do_export()
 
-      # num_verts = DM.get_vnum()
       vnum = DM.np_get_vertices(np_verts)
       tnum = DM.np_get_triangles_vertices(np_tris)
       move_scale(np_verts[:vnum,:])
       box = show_geometry(np_verts, np_tris, tnum, vnum)
+
       yield box
 
   from view3d import View3d
   v3d = View3d(1000)
   v3d.start(geometry_generator)
+
+  do_export()
 
 
 if __name__ == '__main__' :
