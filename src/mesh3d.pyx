@@ -1192,6 +1192,34 @@ cdef class Mesh3d:
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
+  cpdef long np_get_triangles_intensity(self, np.ndarray[double, mode="c",ndim=1] a):
+
+    cdef long f
+    cdef sHE he
+    cdef long next
+    cdef double intensity = 0.0
+
+    for f in xrange(self.fnum):
+      intensity = 0.0
+      he = self.HE[self.FHE[f]]
+      next = he.next
+      intensity += self.__get_edge_intensity(he.id)
+
+      he = self.HE[self.FHE[f]]
+      next = he.next
+      intensity += self.__get_edge_intensity(he.id)
+
+      he = self.HE[self.FHE[f]]
+      next = he.next
+      intensity += self.__get_edge_intensity(he.id)
+
+      a[f] = intensity/3.0
+
+    return self.fnum
+
+  @cython.wraparound(False)
+  @cython.boundscheck(False)
+  @cython.nonecheck(False)
   cpdef double get_edge_intensity(self, long he1):
 
     return self.__get_edge_intensity(he1)

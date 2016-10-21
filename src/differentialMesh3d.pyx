@@ -536,16 +536,16 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
         )
 
         # opposite
-        num = self.__get_opposite_edges(v, vertices)
-        self.__unfold(
-          v,
-          self.DX,
-          self.DY,
-          self.DZ,
-          unfold_stp,
-          vertices,
-          num
-        )
+        # num = self.__get_opposite_edges(v, vertices)
+        # self.__unfold(
+        #   v,
+        #   self.DX,
+        #   self.DY,
+        #   self.DZ,
+        #   unfold_stp,
+        #   vertices,
+        #   num
+        # )
         # self.__triangle(
         #   v,
         #   self.DX,

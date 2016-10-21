@@ -128,6 +128,8 @@ cdef class Mesh3d:
 
   cpdef long np_get_triangles_gen(self, np.ndarray[long, mode="c",ndim=1] a)
 
+  cpdef long np_get_triangles_intensity(self, np.ndarray[double, mode="c",ndim=1] a)
+
   cpdef double get_edge_intensity(self, long he1)
 
   cpdef long set_vertex_intensity(self, long v1, double i)
