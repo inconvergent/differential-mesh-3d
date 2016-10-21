@@ -15,8 +15,6 @@ ZONEWIDTH = 0.004
 
 REJECT = 1.0*STP
 ATTRACT = 0.9*STP
-UNFOLD = 0.0*STP
-TRIANGLE = 0.0*STP
 
 DIMINISH = 0.99
 SMOOTH = 0.05
@@ -156,8 +154,6 @@ def main():
         DM.optimize_position(
             REJECT,
             ATTRACT,
-            UNFOLD,
-            TRIANGLE,
             DIMINISH,
             SMOOTH,
             scale_intensity=1
