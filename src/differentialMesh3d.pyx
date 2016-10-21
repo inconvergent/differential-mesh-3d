@@ -18,9 +18,6 @@ from libc.math cimport fabs
 from helpers cimport double_array_init
 from helpers cimport long_array_init
 
-import numpy as np
-cimport numpy as np
-
 
 cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
@@ -338,7 +335,7 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cpdef long position_noise(self, np.ndarray[double, mode="c",ndim=2] a, long scale_intensity):
+  cpdef long position_noise(self, double[:,:] a, long scale_intensity):
 
     cdef long v
     cdef double intensity = 1

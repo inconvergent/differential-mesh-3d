@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 # cython: profile=True
 
-cimport numpy as np
 from zonemap3d cimport Zonemap3d
 
 cdef struct s_HE:
@@ -122,19 +121,19 @@ cdef class Mesh3d:
 
   ## GET DATA
 
-  cpdef long np_get_vertices(self, np.ndarray[double, mode="c",ndim=2] a)
+  cpdef long np_get_vertices(self, double[:,:] a)
 
-  cpdef long np_get_triangles_vertices(self, np.ndarray[long, mode="c",ndim=2] a)
+  cpdef long np_get_triangles_vertices(self, long[:, :] a)
 
-  cpdef long np_get_triangles_gen(self, np.ndarray[long, mode="c",ndim=1] a)
+  cpdef long np_get_triangles_gen(self, long[:] a)
 
-  cpdef long np_get_triangles_intensity(self, np.ndarray[double, mode="c",ndim=1] a)
+  cpdef long np_get_triangles_intensity(self, double[:] a)
 
   cpdef double get_edge_intensity(self, long he1)
 
   cpdef long set_vertex_intensity(self, long v1, double i)
 
-  cpdef long set_vertices_intensity(self, np.ndarray[long, mode="c",ndim=1] a, double i)
+  cpdef long set_vertices_intensity(self, long[:] a, double i)
 
   cpdef long set_edge_intensity(self, long he1, double i)
 
@@ -143,7 +142,7 @@ cdef class Mesh3d:
 
   cpdef double get_triangle_intensity(self, long f1)
 
-  cpdef long get_vertices_intensity(self, np.ndarray[double, mode="c",ndim=1] a)
+  cpdef long get_vertices_intensity(self, double[:] a)
 
   cpdef list get_triangle_edges(self, long f1)
 

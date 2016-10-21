@@ -18,8 +18,6 @@ from libc.math cimport M_PI
 from helpers cimport long_array_init
 from helpers cimport double_array_init
 
-import numpy as np
-cimport numpy as np
 cimport cython
 
 
@@ -1131,7 +1129,7 @@ cdef class Mesh3d:
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cpdef long np_get_vertices(self, np.ndarray[double, mode="c",ndim=2] a):
+  cpdef long np_get_vertices(self, double[:,:] a):
     """
     """
 
@@ -1149,7 +1147,7 @@ cdef class Mesh3d:
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cpdef long np_get_triangles_vertices(self, np.ndarray[long, mode="c",ndim=2] a):
+  cpdef long np_get_triangles_vertices(self, long[:,:] a):
 
     cdef long fnum = self.fnum
     cdef long f
@@ -1180,7 +1178,7 @@ cdef class Mesh3d:
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cpdef long np_get_triangles_gen(self, np.ndarray[long, mode="c",ndim=1] a):
+  cpdef long np_get_triangles_gen(self, long[:] a):
 
     cdef long f
     for f in xrange(self.fnum):
@@ -1192,7 +1190,7 @@ cdef class Mesh3d:
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cpdef long np_get_triangles_intensity(self, np.ndarray[double, mode="c",ndim=1] a):
+  cpdef long np_get_triangles_intensity(self, double[:] a):
 
     cdef long f
     cdef sHE he
@@ -1236,7 +1234,7 @@ cdef class Mesh3d:
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cpdef long set_vertices_intensity(self, np.ndarray[long, mode="c",ndim=1] a, double i):
+  cpdef long set_vertices_intensity(self, long[:] a, double i):
 
     cdef long v1
 
@@ -1278,7 +1276,7 @@ cdef class Mesh3d:
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cpdef long get_vertices_intensity(self, np.ndarray[double, mode="c",ndim=1] a):
+  cpdef long get_vertices_intensity(self, double[:] a):
 
     cdef long v1
 
