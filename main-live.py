@@ -26,7 +26,7 @@ OBJ = './data/cyl.obj'
 
 SEEDTYPE = 'surface'
 SEEDRATIO = 1.0
-SEED_FREQ = 2
+SEED_FREQ = 1
 
 SCALE = 0.006
 
@@ -118,7 +118,7 @@ def main():
 
   seed_selector = get_seed_selector(DM, SEEDTYPE, SEEDRATIO)
 
-  noise = random_unit_vec(DM.get_vnum(), STP*100.)
+  noise = random_unit_vec(DM.get_vnum(), STP*500.)
   DM.position_noise(noise, scale_intensity=-1)
 
   DM.optimize_edges(SPLIT_LIMIT, FLIP_LIMIT)
