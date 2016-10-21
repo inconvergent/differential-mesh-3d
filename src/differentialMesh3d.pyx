@@ -107,9 +107,6 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
     cdef long k4
     cdef long neigh
 
-    cdef double dx
-    cdef double dy
-    cdef double dz
     cdef double nrm
     cdef double s
 
@@ -142,18 +139,9 @@ cdef class DifferentialMesh3d(mesh3d.Mesh3d):
       if nrm>self.farl or nrm<=1e-9:
         continue
 
-      dx = dst[k4]
-      dy = dst[k4+1]
-      dz = dst[k4+2]
-
-      s = self.farl/nrm-1.0
-
-      #if nrm<self.nearl:
-        #s *= 2.0
-
-      resx += dx*s
-      resy += dy*s
-      resz += dz*s
+      resx += dst[k4]/nrm
+      resy += dst[k4+1]/nrm
+      resz += dst[k4+2]/nrm
 
     diffx[v] += resx*stp
     diffy[v] += resy*stp

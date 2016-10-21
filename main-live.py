@@ -7,13 +7,13 @@ from numpy import array
 NMAX = 10000000
 
 PROCS = 4
-STP = 1.0e-6
+STP = 1.0e-7
 
 NEARL = 0.001
 FARL = 0.004
 ZONEWIDTH = 0.004
 
-REJECT = 1.0*STP
+REJECT = 0.1*STP
 ATTRACT = 0.9*STP
 
 DIMINISH = 0.99
