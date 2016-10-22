@@ -599,7 +599,7 @@ cdef class Mesh3d:
     ## don't flip edge if the "curvature" of the two connected faces is too great
     if fabs(mcx*mdx + mcy*mdy + mcz*mdz)/ (
         sqrt(mcx*mcx+mcy*mcy+mcz*mcz) *
-        sqrt(mdx*mdx+mdy*mdy+mdz*mdz))<0.8:
+        sqrt(mdx*mdx+mdy*mdy+mdz*mdz))<0.9:
       return -1
 
     if self.__edge_duplicate_test(db1,c,d)!=1:

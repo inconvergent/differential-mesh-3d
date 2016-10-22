@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-from numpy import zeros
 from numpy import array
 
 NMAX = 1000000
@@ -27,18 +26,17 @@ SCALE = 0.06
 
 SEEDTYPE = 'surface'
 SEEDRATIO = 1.0
-SEED_FREQ = 1
+SEED_FREQ = 10
 
-
-SPEEDUP = 1
+SPEEDUP = 5
 
 
 
 def main():
 
   from differentialMesh3d import DifferentialMesh3d
-  from iutils.ioOBJ import load_move_scale as load_obj
-  from iutils.random import random_unit_vec
+  from modules.ioOBJ import load_move_scale as load_obj
+  from modules.random import random_unit_vec
   from modules.geometry import get_show_geometry
   from modules.utils import get_seed_selector
   from modules.utils import print_stats
@@ -110,7 +108,12 @@ def main():
       yield box
 
   from view3d import View3d
-  v3d = View3d(1000)
+  v3d = View3d(
+      size=512,
+      initial_scale=1.3,
+      autorotate=True,
+      save_img=True
+      )
   v3d.start(geometry_generator)
 
   export = get_exporter(DM, fn, NMAX)
