@@ -7,19 +7,19 @@ from numpy import array
 NMAX = 10000000
 
 PROCS = 4
-STP = 1.0e-7
+STP = 5.0e-5
 
-NEARL = 0.001
-FARL = 0.004
-ZONEWIDTH = 0.004
+NEARL = 0.01
+FARL = 0.08
+ZONEWIDTH = 0.08
 
 REJECT = 0.1*STP
 ATTRACT = 0.9*STP
 
 DIMINISH = 0.99
-SMOOTH = 0.05
+SMOOTH = 0.1
 
-SPLIT_LIMIT = NEARL*0.9
+SPLIT_LIMIT = NEARL*1.2
 FLIP_LIMIT = NEARL*0.5
 
 OBJ = './data/cyl.obj'
@@ -28,11 +28,13 @@ SEEDTYPE = 'surface'
 SEEDRATIO = 1.0
 SEED_FREQ = 1
 
-SCALE = 0.006
+SCALE = 0.06
 
 EXPORT = 1000
 STAT = 100
 DRAW = 100
+
+SPEEDUP = 1
 
 
 
@@ -71,7 +73,7 @@ def main():
 
   seed_selector = get_seed_selector(DM, SEEDTYPE, SEEDRATIO)
 
-  noise = random_unit_vec(DM.get_vnum(), STP*500.)
+  noise = random_unit_vec(DM.get_vnum(), STP*100.)
   DM.position_noise(noise, scale_intensity=-1)
 
   DM.optimize_edges(SPLIT_LIMIT, FLIP_LIMIT)
@@ -102,7 +104,7 @@ def main():
     box = array((-1,-1,-1,1,1), 'float')
     while True:
       i += 1
-      for _ in range(50):
+      for _ in range(SPEEDUP):
         k += 1
         DM.optimize_position(
             REJECT,
