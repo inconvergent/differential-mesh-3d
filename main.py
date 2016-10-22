@@ -9,28 +9,32 @@ PROCS = 4
 STP = 5.0e-5
 
 NEARL = 0.01
-FARL = 0.08
-ZONEWIDTH = 0.08
+FARL = 0.1
+ZONEWIDTH = 0.1
 
 REJECT = 0.1*STP
 ATTRACT = 0.9*STP
-
-DIMINISH = 0.99
-SMOOTH = 0.1
 
 SPLIT_LIMIT = NEARL*1.2
 FLIP_LIMIT = NEARL*0.5
 FLIP_CURVATURE = 0.95
 
 OBJ = './data/cyl.obj'
-SCALE = 0.06
+SCALE = 6*NEARL
 
 SEEDTYPE = 'surface'
 SEEDRATIO = None # None means all vertices, otherwise use a number ∈ (0,1)
-SEED_FREQ = 10
+SEED_FREQ = 1
+
+DIMINISH = 0.995
+SMOOTH = 0.1
 
 
-SPEEDUP = 5
+SCREEN_SIZE = 1000
+INITIAL_SCALE = 1.2
+AUTOROTATE = True
+SAVE_IMG = None
+SPEEDUP = 6
 
 
 
@@ -111,10 +115,10 @@ def main():
 
   from view3d import View3d
   v3d = View3d(
-      size=512,
-      initial_scale=1.3,
-      autorotate=True,
-      save_img=True
+      size=SCREEN_SIZE,
+      initial_scale=INITIAL_SCALE,
+      autorotate=AUTOROTATE,
+      save_img=SAVE_IMG
       )
   v3d.start(geometry_generator)
 
@@ -122,6 +126,6 @@ def main():
   export()
 
 
-if __name__ == '__main__' :
+if __name__ == '__main__':
   main()
 
