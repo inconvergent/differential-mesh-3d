@@ -77,7 +77,7 @@ cdef class Mesh3d:
 
   cdef long __edge_duplicate_test(self, long he1, long a, long b) nogil
 
-  cdef long __flip_edge(self, long he1, double limit) nogil
+  cdef long __flip_edge(self, long he1, double limit, double curvature) nogil
 
   cdef long __split_edge(self, long he1) nogil
 
@@ -117,7 +117,7 @@ cdef class Mesh3d:
 
   cpdef long next_surface(self, long he1, long direction)
 
-  cpdef long optimize_edges(self, double split_limit, double flip_limit)
+  cpdef long optimize_edges(self, double split_limit, double flip_limit, double curvature)
 
   ## GET DATA
 

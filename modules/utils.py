@@ -66,16 +66,16 @@ def get_surface_vertices(dm):
 
   return list(set(res))
 
-def get_seed_selector(dm, t, sr):
+def get_seed_selector(dm, t, sr=None):
   from numpy import array
   from numpy import arange
   from numpy import ones
   from numpy.random import random
 
-  if sr >= 1:
-    get_mask = lambda n, sr: ones(n, 'bool')
-  else:
+  if sr is not None:
     get_mask = lambda n, sr: (random(size=n) < sr).nonzero()[0]
+  else:
+    get_mask = lambda n, sr: ones(n, 'bool')
 
   if t == 'surface':
     def f():

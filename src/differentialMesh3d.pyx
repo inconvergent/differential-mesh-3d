@@ -21,7 +21,14 @@ from helpers cimport long_array_init
 
 cdef class DifferentialMesh3d(mesh3d.Mesh3d):
 
-  def __init__(self, long nmax, double zonewidth, double nearl, double farl, long procs):
+  def __init__(
+      self,
+      long nmax,
+      double zonewidth,
+      double nearl,
+      double farl,
+      long procs
+      ):
 
     mesh3d.Mesh3d.__init__(self, nmax, zonewidth, procs)
 

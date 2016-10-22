@@ -50,7 +50,12 @@ cdef class Mesh3d:
 
   """
 
-  def __init__(self, long nmax, double zonewidth, long procs):
+  def __init__(
+      self,
+      long nmax,
+      double zonewidth,
+      long procs
+      ):
     """
     initialize triangular mesh.
 
@@ -542,7 +547,7 @@ cdef class Mesh3d:
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cdef long __flip_edge(self, long he1, double limit) nogil:
+  cdef long __flip_edge(self, long he1, double limit, double flip_curvature) nogil:
 
     if self.__is_surface_edge(he1)>0:
 
@@ -599,7 +604,7 @@ cdef class Mesh3d:
     ## don't flip edge if the "curvature" of the two connected faces is too great
     if fabs(mcx*mdx + mcy*mdy + mcz*mdz)/ (
         sqrt(mcx*mcx+mcy*mcy+mcz*mcz) *
-        sqrt(mdx*mdx+mdy*mdy+mdz*mdz))<0.9:
+        sqrt(mdx*mdx+mdy*mdy+mdz*mdz))<flip_curvature:
       return -1
 
     if self.__edge_duplicate_test(db1,c,d)!=1:
@@ -1099,7 +1104,12 @@ cdef class Mesh3d:
   @cython.wraparound(False)
   @cython.boundscheck(False)
   @cython.nonecheck(False)
-  cpdef long optimize_edges(self, double split_limit, double flip_limit):
+  cpdef long optimize_edges(
+      self,
+      double split_limit,
+      double flip_limit,
+      double flip_curvature
+      ):
 
     cdef long he1
     cdef long v
@@ -1120,7 +1130,7 @@ cdef class Mesh3d:
       ## we're not flipping them anyway.
       if self.HE[he1].first<self.HE[he1].last:
 
-        self.__flip_edge(he1, flip_limit)
+        self.__flip_edge(he1, flip_limit, flip_curvature)
 
     self.__split_all_longest_triangle_edges(split_limit)
 

@@ -20,13 +20,15 @@ SMOOTH = 0.1
 
 SPLIT_LIMIT = NEARL*1.2
 FLIP_LIMIT = NEARL*0.5
+FLIP_CURVATURE = 0.95
 
 OBJ = './data/cyl.obj'
 SCALE = 0.06
 
 SEEDTYPE = 'surface'
-SEEDRATIO = 1.0
+SEEDRATIO = None # None means all vertices, otherwise use a number ∈ (0,1)
 SEED_FREQ = 10
+
 
 SPEEDUP = 5
 
@@ -69,7 +71,7 @@ def main():
   noise = random_unit_vec(DM.get_vnum(), STP*100.)
   DM.position_noise(noise, scale_intensity=-1)
 
-  DM.optimize_edges(SPLIT_LIMIT, FLIP_LIMIT)
+  DM.optimize_edges(SPLIT_LIMIT, FLIP_LIMIT, FLIP_CURVATURE)
 
   for he in range(DM.get_henum()):
     DM.set_edge_intensity(he, 1.0)
@@ -93,7 +95,7 @@ def main():
             scale_intensity=1
             )
 
-        DM.optimize_edges(SPLIT_LIMIT, FLIP_LIMIT)
+        DM.optimize_edges(SPLIT_LIMIT, FLIP_LIMIT, FLIP_CURVATURE)
 
         if len(seeds) > 0:
           DM.set_vertices_intensity(seeds, 1.0)
