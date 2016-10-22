@@ -1062,9 +1062,9 @@ cdef class Mesh3d:
     print('edge max length: {:02.10f}'.format(maxedge))
 
     return {
-      'minedge': minedge,
-      'maxedge': maxedge,
-      'avgedge': avgedge
+      'min_edge': minedge,
+      'max_edge': maxedge,
+      'avg_edge': avgedge
     }
 
 

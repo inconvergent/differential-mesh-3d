@@ -4,7 +4,7 @@
 from numpy import zeros
 from numpy import array
 
-NMAX = 10000000
+NMAX = 1000000
 
 PROCS = 4
 STP = 5.0e-5
@@ -23,16 +23,12 @@ SPLIT_LIMIT = NEARL*1.2
 FLIP_LIMIT = NEARL*0.5
 
 OBJ = './data/cyl.obj'
+SCALE = 0.06
 
 SEEDTYPE = 'surface'
 SEEDRATIO = 1.0
 SEED_FREQ = 1
 
-SCALE = 0.06
-
-EXPORT = 1000
-STAT = 100
-DRAW = 100
 
 SPEEDUP = 1
 
@@ -41,18 +37,15 @@ SPEEDUP = 1
 def main():
 
   from differentialMesh3d import DifferentialMesh3d
-  from iutils.ioOBJ import export
   from iutils.ioOBJ import load_move_scale as load_obj
   from iutils.random import random_unit_vec
-  from modules.utils import print_stats
+  from modules.geometry import get_show_geometry
   from modules.utils import get_seed_selector
-  from modules.geometry import move_scale
-  from modules.geometry import show_geometry
-
+  from modules.utils import print_stats
+  from modules.utils import get_exporter
 
   from fn import Fn
   fn = Fn(prefix='./res/', postfix='.obj')
-
 
   DM = DifferentialMesh3d(
       nmax=NMAX,
@@ -64,11 +57,13 @@ def main():
 
   data = load_obj(
       OBJ,
-      s = SCALE,
-      mx = [0.5]*3
+      s=SCALE,
+      mx=[0.5] * 3
       )
   info = DM.initiate_faces(list(data['vertices']), list(data['faces']))
-  if info['minedge']<NEARL:
+
+  if info['min_edge'] < NEARL:
+    print('all edges are too short. try scaling up initial size.')
     return
 
   seed_selector = get_seed_selector(DM, SEEDTYPE, SEEDRATIO)
@@ -81,27 +76,13 @@ def main():
   for he in range(DM.get_henum()):
     DM.set_edge_intensity(he, 1.0)
 
-  np_verts = zeros((NMAX,3),'float')
-  np_tris = zeros((NMAX,3),'int')
-  np_int = zeros(NMAX,'float')
-
-  def do_export():
-    vnum = DM.np_get_vertices(np_verts)
-    tnum = DM.np_get_triangles_vertices(np_tris)
-    DM.np_get_triangles_intensity(np_int)
-    move_scale(np_verts[:vnum,:], s=1000)
-    export(
-        'thing_mesh',
-        fn.name(),
-        verts=np_verts[:vnum,:],
-        tris=np_tris[:tnum,:]
-        )
+  show_geometry = get_show_geometry(DM, NMAX)
 
   def geometry_generator():
     seeds = seed_selector()
     i = 0
     k = 0
-    box = array((-1,-1,-1,1,1), 'float')
+    box = array((-1, -1, -1, 1, 1), 'float')
     while True:
       i += 1
       for _ in range(SPEEDUP):
@@ -116,18 +97,15 @@ def main():
 
         DM.optimize_edges(SPLIT_LIMIT, FLIP_LIMIT)
 
-        if len(seeds)>0:
+        if len(seeds) > 0:
           DM.set_vertices_intensity(seeds, 1.0)
 
         if k%SEED_FREQ == 0:
           seeds = seed_selector()
 
       print_stats(k, DM, meta='alive v: {:d}'.format(len(seeds)))
-      vnum = DM.np_get_vertices(np_verts)
-      tnum = DM.np_get_triangles_vertices(np_tris)
-      DM.np_get_triangles_intensity(np_int)
-      move_scale(np_verts[:vnum,:])
-      box = show_geometry(np_verts, np_tris, np_int, tnum, vnum)
+
+      box = show_geometry()
 
       yield box
 
@@ -135,7 +113,8 @@ def main():
   v3d = View3d(1000)
   v3d.start(geometry_generator)
 
-  do_export()
+  export = get_exporter(DM, fn, NMAX)
+  export()
 
 
 if __name__ == '__main__' :
